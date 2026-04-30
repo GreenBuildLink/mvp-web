@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -150,6 +151,7 @@ function toggleValue(value: string, items: string[], setItems: (next: string[]) 
 }
 
 export default function CompanyProfilePage() {
+    const router = useRouter();
     const [step, setStep] = useState(1);
     const [submitted, setSubmitted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -299,7 +301,16 @@ export default function CompanyProfilePage() {
                             <CheckCircle2 className="w-10 h-10 text-white" />
                         </div>
                         <h2 className="text-2xl font-bold mb-3">Registration submitted</h2>
-                        <p className="text-muted-foreground">Your Green Industry form has been submitted successfully.</p>
+                        <p className="text-muted-foreground mb-2">Your Green Industry form has been submitted successfully.</p>
+                        <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-6">Plan: {subscriptionPlans.find((p) => p.id === selectedPlan)?.name}</p>
+                        <div className="space-y-3">
+                            <Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg" onClick={() => router.push("/")}>
+                                Go to Home
+                            </Button>
+                            <Button variant="outline" className="w-full rounded-full" onClick={() => { setSubmitted(false); setStep(1); }}>
+                                Submit Another
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -483,18 +494,25 @@ export default function CompanyProfilePage() {
                             )}
 
                             {step === 3 && (
-                                <div className="grid md:grid-cols-3 gap-6">
-                                    {subscriptionPlans.map((plan) => (
-                                        <Card key={plan.id} className={`relative cursor-pointer border-2 transition-all duration-500 overflow-hidden ${selectedPlan === plan.id ? `${plan.borderColor} shadow-xl` : "border-transparent shadow-lg hover:shadow-xl"}`} onClick={() => setSelectedPlan(plan.id)}>
-                                            {plan.popular && (<Badge className="absolute top-4 right-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-xs"><Sparkles className="w-3 h-3 mr-1" />Popular</Badge>)}
-                                            <CardContent className="p-6">
-                                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${plan.color} flex items-center justify-center shadow-lg mb-4`}><plan.icon className="w-6 h-6 text-white" /></div>
-                                                <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
-                                                <p className="text-2xl font-bold gradient-text mb-4">{plan.price}</p>
-                                                <ul className="space-y-2">{plan.features.map((f) => (<li key={f} className="flex items-center gap-2 text-sm text-muted-foreground"><CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />{f}</li>))}</ul>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
+                                <div className="space-y-6">
+                                    <div className="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                                        <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                                            <span className="font-semibold">Selected Plan:</span> {subscriptionPlans.find((p) => p.id === selectedPlan)?.name} ({subscriptionPlans.find((p) => p.id === selectedPlan)?.price})
+                                        </p>
+                                    </div>
+                                    <div className="grid md:grid-cols-3 gap-6">
+                                        {subscriptionPlans.map((plan) => (
+                                            <Card key={plan.id} className={`relative cursor-pointer border-2 transition-all duration-500 overflow-hidden ${selectedPlan === plan.id ? `${plan.borderColor} shadow-xl ring-2 ring-emerald-500` : "border-transparent shadow-lg hover:shadow-xl"}`} onClick={() => setSelectedPlan(plan.id)}>
+                                                {plan.popular && (<Badge className="absolute top-4 right-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-xs"><Sparkles className="w-3 h-3 mr-1" />Popular</Badge>)}
+                                                <CardContent className="p-6">
+                                                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${plan.color} flex items-center justify-center shadow-lg mb-4`}><plan.icon className="w-6 h-6 text-white" /></div>
+                                                    <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
+                                                    <p className="text-2xl font-bold gradient-text mb-4">{plan.price}</p>
+                                                    <ul className="space-y-2">{plan.features.map((f) => (<li key={f} className="flex items-center gap-2 text-sm text-muted-foreground"><CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />{f}</li>))}</ul>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 

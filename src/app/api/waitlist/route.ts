@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { insertProjectSubmission, insertCompanySubmission, insertWorkerSubmission, insertConsultationSubmission } from "@/lib/db";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const TO = process.env.CONTACT_EMAIL;
@@ -540,6 +541,125 @@ export async function POST(req: NextRequest) {
         if (error) {
             console.error("Resend error:", error);
             return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+        }
+
+        try {
+            if (type === "project") {
+                await insertProjectSubmission({
+                    full_name: text(rest.fullName),
+                    email: text(rest.email),
+                    phone: text(rest.phone),
+                    country: text(rest.country),
+                    city: text(rest.city),
+                    job_title: text(rest.jobTitle),
+                    expertise_field: text(rest.expertiseField),
+                    years_experience: text(rest.yearsExperience),
+                    organization: text(rest.organization) || null,
+                    education_level: text(rest.educationLevel),
+                    certifications: (rest.certifications as string[]) || [],
+                    other_certification: text(rest.otherCertification) || null,
+                    tools: text(rest.tools) || null,
+                    sustainable_design_level: text(rest.sustainableDesignLevel),
+                    key_skills: (rest.keySkills as string[]) || [],
+                    other_key_skill: text(rest.otherKeySkill) || null,
+                    green_projects_worked: text(rest.greenProjectsWorked),
+                    green_project_description: text(rest.greenProjectDescription) || null,
+                    project_types: text(rest.projectTypes) || null,
+                    knowledge_level: text(rest.knowledgeLevel),
+                    join_reason: text(rest.joinReason),
+                    objectives: (rest.objectives as string[]) || [],
+                    learning_format: text(rest.learningFormat),
+                    availability_per_week: text(rest.availabilityPerWeek),
+                    preferred_schedule: text(rest.preferredSchedule),
+                    portfolio_link: text(rest.portfolioLink) || null,
+                    selected_plan: text(rest.selectedPlan) || null,
+                });
+            } else if (type === "company") {
+                await insertCompanySubmission({
+                    company_name: text(rest.companyName),
+                    company_description: text(rest.companyDescription),
+                    company_address: text(rest.companyAddress) || null,
+                    company_city: text(rest.companyCity) || null,
+                    company_country: text(rest.companyCountry) || null,
+                    company_location: text(rest.companyLocation) || null,
+                    company_email: text(rest.companyEmail) || null,
+                    company_phone: text(rest.companyPhone) || null,
+                    company_website: text(rest.companyWebsite) || null,
+                    social_media_links: {
+                        linkedin: text(rest.linkedInUrl),
+                        facebook: text(rest.facebookUrl),
+                        pinterest: text(rest.pinterestUrl),
+                        instagram: text(rest.instagramUrl),
+                        youtube: text(rest.youtubeUrl),
+                    },
+                    linkedin_url: text(rest.linkedInUrl) || null,
+                    facebook_url: text(rest.facebookUrl) || null,
+                    pinterest_url: text(rest.pinterestUrl) || null,
+                    instagram_url: text(rest.instagramUrl) || null,
+                    youtube_url: text(rest.youtubeUrl) || null,
+                    company_type: text(rest.companyType) || null,
+                    years_of_operation: text(rest.yearsOfOperation) || null,
+                    main_sector: text(rest.mainSector) || null,
+                    collaboration_interests: (rest.collaborationInterests as string[]) || [],
+                    publish_consent: Boolean(rest.publishConsent),
+                    selected_plan: text(rest.selectedPlan) || null,
+                    products: (rest.products as Record<string, unknown>[]) || [],
+                });
+            } else if (type === "worker") {
+                await insertWorkerSubmission({
+                    name: text(rest.name),
+                    email: text(rest.email),
+                    phone: text(rest.phone) || null,
+                    location: text(rest.location),
+                    age: text(rest.age) || null,
+                    occupation: text(rest.occupation) || null,
+                    trade: text(rest.trade),
+                    other_trade: text(rest.otherTrade) || null,
+                    years_experience: text(rest.yearsExperience) || null,
+                    tasks: (rest.tasks as string[]) || [],
+                    other_task: text(rest.otherTask) || null,
+                    worked_on_sites: text(rest.workedOnSites) || null,
+                    green_project_experience: text(rest.greenProjectExperience) || null,
+                    trade_level: text(rest.tradeLevel) || null,
+                    tools_machines: text(rest.toolsMachines) || null,
+                    technical_training: text(rest.technicalTraining) || null,
+                    worker_certifications: text(rest.workerCertifications) || null,
+                    currently_available: text(rest.currentlyAvailable) || null,
+                    work_type: text(rest.workType) || null,
+                    mobility: text(rest.mobility) || null,
+                    interested_in_green: text(rest.interestedInGreen) || null,
+                    green_interest_areas: (rest.greenInterestAreas as string[]) || [],
+                    wants_training: text(rest.wantsTraining) || null,
+                    preferred_training_type: text(rest.preferredTrainingType) || null,
+                    cv_link: text(rest.cvLink) || null,
+                    worker_certificates_link: text(rest.workerCertificatesLink) || null,
+                    portfolio_link: text(rest.portfolioLink) || null,
+                    consent: Boolean(rest.consent),
+                    selected_plan: text(rest.selectedPlan) || null,
+                });
+            } else if (type === "consultation") {
+                await insertConsultationSubmission({
+                    first_name: text(rest.firstName),
+                    last_name: text(rest.lastName),
+                    phone: text(rest.phone),
+                    email: text(rest.email),
+                    address: text(rest.address),
+                    position: text(rest.position),
+                    project_country: text(rest.projectCountry),
+                    project_city: text(rest.projectCity),
+                    climate_zone: text(rest.climateZone) || null,
+                    project_type: text(rest.projectType),
+                    project_stage: text(rest.projectStage),
+                    land_area: text(rest.landArea),
+                    built_up_area: text(rest.builtUpArea),
+                    timeline_start: text(rest.timelineStart),
+                    timeline_delivery: text(rest.timelineDelivery),
+                    required_services: (rest.requiredServices as string[]) || [],
+                    estimated_quote: Boolean(rest.estimatedQuote),
+                });
+            }
+        } catch (dbError) {
+            console.error("Database insert error:", dbError);
         }
 
         return NextResponse.json({ success: true });

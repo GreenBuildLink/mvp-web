@@ -25,6 +25,7 @@ import {
     Leaf,
 } from "lucide-react";
 import { PRODUCT_CATEGORIES } from "@/lib/types";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default function CompanyListPage() {
     const [search, setSearch] = useState("");
@@ -187,17 +188,22 @@ export default function CompanyListPage() {
                 </div>
 
                 {filteredCompanies.length === 0 && (
-                    <div className="text-center py-20">
-                        <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4">
-                            <Search className="w-8 h-8 text-emerald-500" />
-                        </div>
-                        <h3 className="text-lg font-semibold mb-2">
-                            No companies found
-                        </h3>
-                        <p className="text-muted-foreground">
-                            Try adjusting your search criteria.
-                        </p>
-                    </div>
+                    <EmptyState
+                        title="No companies found"
+                        description="Try adjusting your search criteria or browse all categories."
+                        icon={
+                            <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                                <Search className="w-8 h-8 text-emerald-500" />
+                            </div>
+                        }
+                        action={{
+                            label: "Clear filters",
+                            onClick: () => {
+                                setSearch("");
+                                setCategoryFilter("all");
+                            },
+                        }}
+                    />
                 )}
             </div>
         </div>

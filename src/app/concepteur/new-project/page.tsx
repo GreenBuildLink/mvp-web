@@ -1,6 +1,7 @@
 "use client";
 
 import { Dispatch, FormEvent, SetStateAction, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -80,6 +81,7 @@ const subscriptionPlans = [
 ];
 
 export default function NewProjectPage() {
+    const router = useRouter();
     const [step, setStep] = useState(1);
     const [submitted, setSubmitted] = useState(false);
 
@@ -203,10 +205,14 @@ export default function NewProjectPage() {
                             </div>
                         </div>
 
-                        <Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg" onClick={() => setSubmitted(false)}>
-                            <Sparkles className="w-4 h-4 mr-2" />
-                            Done
-                        </Button>
+                        <div className="space-y-3">
+                            <Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg" onClick={() => router.push("/")}>
+                                Go to Home
+                            </Button>
+                            <Button variant="outline" className="w-full rounded-full" onClick={() => setSubmitted(false)}>
+                                <Sparkles className="w-4 h-4 mr-2" />Done
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -353,9 +359,14 @@ export default function NewProjectPage() {
                         <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2"><Crown className="w-5 h-5 text-emerald-500" />Final. Subscription</CardTitle><CardDescription>Choose your plan, then submit your registration.</CardDescription></CardHeader>
                         <form onSubmit={handleSubmit}>
                             <CardContent className="space-y-6 pt-4">
+                                <div className="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                                    <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                                        <span className="font-semibold">Selected Plan:</span> {subscriptionPlans.find((p) => p.id === selectedPlan)?.name} ({subscriptionPlans.find((p) => p.id === selectedPlan)?.price})
+                                    </p>
+                                </div>
                                 <div className="grid md:grid-cols-3 gap-6">
                                     {subscriptionPlans.map((plan) => (
-                                        <Card key={plan.id} className={`relative cursor-pointer border-2 transition-all duration-500 overflow-hidden ${selectedPlan === plan.id ? `${plan.borderColor} shadow-xl` : "border-transparent shadow-lg hover:shadow-xl"}`} onClick={() => setSelectedPlan(plan.id)}>
+                                        <Card key={plan.id} className={`relative cursor-pointer border-2 transition-all duration-500 overflow-hidden ${selectedPlan === plan.id ? `${plan.borderColor} shadow-xl ring-2 ring-emerald-500` : "border-transparent shadow-lg hover:shadow-xl"}`} onClick={() => setSelectedPlan(plan.id)}>
                                             {plan.popular && <Badge className="absolute top-4 right-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-xs"><Sparkles className="w-3 h-3 mr-1" />Popular</Badge>}
                                             <CardContent className="p-6">
                                                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${plan.color} flex items-center justify-center shadow-lg mb-4`}><plan.icon className="w-6 h-6 text-white" /></div>
