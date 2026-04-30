@@ -160,9 +160,9 @@ export type Company = {
 
 export type ProjectData = {
     id: string;
-    title: string;
-    description: string;
-    category: string;
+    title?: string;
+    description?: string;
+    category?: string;
     location: string;
     status: string;
     createdAt: string;
@@ -172,7 +172,13 @@ export type ProjectData = {
         lastName?: string;
         email: string;
         phone: string;
+        address?: string;
     };
+    specification?: string;
+    surface?: number;
+    facadeDimensions?: { width: number; height: number };
+    services?: string[];
+    wwr?: number;
 };
 
 export const PRODUCT_CATEGORIES = [

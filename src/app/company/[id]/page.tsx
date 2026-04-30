@@ -184,11 +184,11 @@ export default function CompanyDetailPage({
                                                     {product.category}
                                                 </Badge>
                                                 <Badge
-                                                    className={`rounded-full text-xs font-bold ${certLevelColors[product.certification.level] ||
+                                                    className={`rounded-full text-xs font-bold ${certLevelColors[product.certification?.level || ""] ||
                                                         "bg-gray-500 text-white"
                                                         }`}
                                                 >
-                                                    {product.certification.level}
+                                                    {product.certification?.level || "N/A"}
                                                 </Badge>
                                             </div>
 
@@ -212,7 +212,7 @@ export default function CompanyDetailPage({
                                                 ))}
                                             </div>
 
-                                            {/* Certification */}
+                                            {product.certification && (
                                             <div className="rounded-xl bg-emerald-50/50 dark:bg-emerald-900/10 p-3 mb-4">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <Shield className="w-4 h-4 text-emerald-600" />
@@ -224,6 +224,7 @@ export default function CompanyDetailPage({
                                                     {product.certification.description}
                                                 </p>
                                             </div>
+                                            )}
 
                                             {product.price && (
                                                 <div className="flex items-center justify-between">
@@ -270,11 +271,11 @@ export default function CompanyDetailPage({
                                                         {product.category}
                                                     </Badge>
                                                     <Badge
-                                                        className={`rounded-full text-xs font-bold ${certLevelColors[product.certification.level] ||
+                                                        className={`rounded-full text-xs font-bold ${certLevelColors[product.certification?.level || ""] ||
                                                             "bg-gray-500 text-white"
                                                             }`}
                                                     >
-                                                        Impact {product.certification.level}
+                                                        Impact {product.certification?.level || "N/A"}
                                                     </Badge>
                                                 </div>
                                                 <p className="text-sm text-muted-foreground mb-3">
@@ -299,6 +300,7 @@ export default function CompanyDetailPage({
                                                         {product.price}
                                                     </span>
                                                 )}
+                                                {product.certification && (
                                                 <div className="rounded-xl bg-emerald-50/50 dark:bg-emerald-900/10 p-3 mt-2 max-w-xs">
                                                     <div className="flex items-center gap-1.5 mb-1">
                                                         <Shield className="w-3.5 h-3.5 text-emerald-600" />
@@ -310,6 +312,7 @@ export default function CompanyDetailPage({
                                                         {product.certification.description}
                                                     </p>
                                                 </div>
+                                                )}
                                             </div>
                                         </div>
                                     </CardContent>
