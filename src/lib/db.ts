@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { getSupabaseAdmin } from './supabase';
 import type { ProjectSubmission, CompanySubmission, WorkerSubmission, ConsultationSubmission } from './types';
 
 type ProjectInsert = Omit<ProjectSubmission, 'id' | 'created_at'>;
@@ -7,6 +7,7 @@ type WorkerInsert = Omit<WorkerSubmission, 'id' | 'created_at'>;
 type ConsultationInsert = Omit<ConsultationSubmission, 'id' | 'created_at'>;
 
 export async function insertProjectSubmission(data: ProjectInsert) {
+    const supabase = getSupabaseAdmin();
     const { data: result, error } = await supabase
         .from('project_submissions')
         .insert(data)
@@ -18,6 +19,7 @@ export async function insertProjectSubmission(data: ProjectInsert) {
 }
 
 export async function insertCompanySubmission(data: CompanyInsert) {
+    const supabase = getSupabaseAdmin();
     const { data: result, error } = await supabase
         .from('company_submissions')
         .insert(data)
@@ -29,6 +31,7 @@ export async function insertCompanySubmission(data: CompanyInsert) {
 }
 
 export async function insertWorkerSubmission(data: WorkerInsert) {
+    const supabase = getSupabaseAdmin();
     const { data: result, error } = await supabase
         .from('worker_submissions')
         .insert(data)
@@ -40,6 +43,7 @@ export async function insertWorkerSubmission(data: WorkerInsert) {
 }
 
 export async function insertConsultationSubmission(data: ConsultationInsert) {
+    const supabase = getSupabaseAdmin();
     const { data: result, error } = await supabase
         .from('consultation_submissions')
         .insert(data)
