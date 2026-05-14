@@ -1,4 +1,4 @@
-import { Company, ProjectData } from "./types";
+import { Company } from "./types";
 
 export const MOCK_COMPANIES: Company[] = [
     {
@@ -240,48 +240,5 @@ export const MOCK_COMPANIES: Company[] = [
                 price: "120€/unité",
             },
         ],
-    },
-];
-
-export const MOCK_PROJECTS: ProjectData[] = [
-    {
-        id: "proj1",
-        personalInfo: {
-            firstName: "Marie",
-            lastName: "Dupont",
-            email: "marie.dupont@email.com",
-            phone: "+33 6 12 34 56 78",
-            address: "12 Rue de la Paix, 75001 Paris",
-        },
-        specification: "Rénovation écologique d'une maison des années 70",
-        location: "Paris 15ème, France",
-        surface: 120,
-        facadeDimensions: { width: 12, height: 8 },
-        services: ["Recommandation de Pratiques", "Analyse Énergétique"],
-        wwr: 25,
-        status: "in_progress",
-        createdAt: "2026-01-15",
-    },
-    {
-        id: "proj2",
-        personalInfo: {
-            firstName: "Pierre",
-            lastName: "Martin",
-            email: "pierre.martin@email.com",
-            phone: "+33 6 98 76 54 32",
-            address: "45 Avenue des Champs, 69001 Lyon",
-        },
-        specification: "Construction d'un bâtiment passif pour bureaux",
-        location: "Lyon 3ème, France",
-        surface: 350,
-        facadeDimensions: { width: 25, height: 12 },
-        services: [
-            "Simulation Thermique",
-            "Certification HQE",
-            "Bilan Carbone",
-        ],
-        wwr: 40,
-        status: "completed",
-        createdAt: "2025-11-20",
     },
 ];

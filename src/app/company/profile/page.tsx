@@ -103,6 +103,7 @@ const useCaseOptions = [
 const marketOptions = ["Local", "Regional", "International"];
 const salesModelOptions = ["Direct sales", "Distributor network", "Custom solutions"];
 const collaborationOptions = ["Being listed in directory", "Training / workshops", "Partnerships"];
+const companySteps = ["Company & Profile", "Product Details", "Subscription"];
 
 interface ProductForm {
     name: string;
@@ -321,31 +322,47 @@ export default function CompanyProfilePage() {
         <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-8">
-                    <Badge className="mb-4 px-4 py-1.5 rounded-full bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/50 text-sm">
+                    <Badge className="mb-4 max-w-full whitespace-normal px-4 py-1.5 text-center text-sm leading-snug bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                         <Building2 className="w-4 h-4 mr-2" />
                         Green Industry Space
                     </Badge>
                     <h1 className="text-3xl sm:text-4xl font-bold mb-3">Green Industry <span className="gradient-text">Registration Form</span></h1>
                 </div>
 
-                <div className="flex items-center justify-center gap-2 mb-8">
-                    {["Company & Profile", "Product Details", "Subscription"].map((label, index) => {
-                        const s = index + 1;
-                        return (
-                            <button
-                                key={label}
-                                onClick={() => setStep(s)}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${step === s
-                                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white"
-                                    : step > s
-                                        ? "bg-emerald-100 text-emerald-700"
-                                        : "bg-muted text-muted-foreground"
-                                    }`}
-                            >
-                                {s}. {label}
-                            </button>
-                        );
-                    })}
+                <div className="mb-8 space-y-4">
+                    <div className="rounded-2xl border border-emerald-100 bg-card/80 p-4 shadow-sm sm:hidden">
+                        <div className="mb-3 flex items-center justify-between gap-3 text-xs font-medium text-muted-foreground">
+                            <span>Step {step} of {companySteps.length}</span>
+                            <span className="text-right text-emerald-700">{companySteps[step - 1]}</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-emerald-100">
+                            <div
+                                className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 transition-all"
+                                style={{ width: `${(step / companySteps.length) * 100}%` }}
+                            />
+                        </div>
+                    </div>
+                    <div className="hidden overflow-x-auto pb-2 sm:block">
+                        <div className="flex w-max min-w-full items-center justify-start gap-2 sm:justify-center">
+                        {companySteps.map((label, index) => {
+                            const s = index + 1;
+                            return (
+                                <button
+                                    key={label}
+                                    onClick={() => setStep(s)}
+                                    className={`shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${step === s
+                                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white"
+                                        : step > s
+                                            ? "bg-emerald-100 text-emerald-700"
+                                            : "bg-muted text-muted-foreground"
+                                        }`}
+                                >
+                                    {s}. {label}
+                                </button>
+                            );
+                        })}
+                        </div>
+                    </div>
                 </div>
 
                 <form onSubmit={handleSubmit}>
@@ -420,7 +437,7 @@ export default function CompanyProfilePage() {
                                 <>
                                     {products.map((product, index) => (
                                         <div key={index} className="rounded-xl border border-emerald-100 p-4 space-y-4">
-                                            <div className="flex items-center justify-between">
+                                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                                 <h3 className="font-semibold flex items-center gap-2"><Package className="w-4 h-4 text-emerald-600" />Product {index + 1}</h3>
                                                 {products.length > 1 && (
                                                     <Button
@@ -500,7 +517,7 @@ export default function CompanyProfilePage() {
                                             <span className="font-semibold">Selected Plan:</span> {subscriptionPlans.find((p) => p.id === selectedPlan)?.name} ({subscriptionPlans.find((p) => p.id === selectedPlan)?.price})
                                         </p>
                                     </div>
-                                    <div className="grid md:grid-cols-3 gap-6">
+                                    <div className="grid gap-6 md:grid-cols-3">
                                         {subscriptionPlans.map((plan) => (
                                             <Card key={plan.id} className={`relative cursor-pointer border-2 transition-all duration-500 overflow-hidden ${selectedPlan === plan.id ? `${plan.borderColor} shadow-xl ring-2 ring-emerald-500` : "border-transparent shadow-lg hover:shadow-xl"}`} onClick={() => setSelectedPlan(plan.id)}>
                                                 {plan.popular && (<Badge className="absolute top-4 right-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-xs"><Sparkles className="w-3 h-3 mr-1" />Popular</Badge>)}
@@ -518,12 +535,12 @@ export default function CompanyProfilePage() {
 
                             {error && <p className="text-sm text-red-500 text-center">{error}</p>}
 
-                            <div className="flex justify-between pt-2">
-                                <Button type="button" variant="outline" className="rounded-full px-6" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={isLoading || step === 1}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button>
+                            <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
+                                <Button type="button" variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={isLoading || step === 1}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button>
                                 {step < 3 ? (
-                                    <Button type="button" className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8" onClick={() => setStep((s) => Math.min(3, s + 1))}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button>
+                                    <Button type="button" className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 sm:w-auto" onClick={() => setStep((s) => Math.min(3, s + 1))}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button>
                                 ) : (
-                                    <Button type="submit" className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-10" disabled={isLoading}>
+                                    <Button type="submit" className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-10 sm:w-auto" disabled={isLoading}>
                                         {isLoading ? (<><Loader2 className="w-5 h-5 mr-2 animate-spin" />Sending...</>) : (<><CheckCircle2 className="w-5 h-5 mr-2" />Submit</>)}
                                     </Button>
                                 )}

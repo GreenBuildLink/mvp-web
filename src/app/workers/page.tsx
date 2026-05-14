@@ -43,6 +43,7 @@ const workTypeOptions = ["Full-time", "Part-time", "Freelance / Missions"];
 const mobilityOptions = ["Local only", "National"];
 const greenAreas = ["Solar energy", "Energy efficiency", "Green materials", "Smart buildings"];
 const trainingTypeOptions = ["Practical (on-site)", "Short courses", "Certification programs"];
+const workerSteps = ["Personal", "Profile", "Skills", "Training", "Subscription"];
 
 const workerSubscriptionPlans = [
     {
@@ -180,16 +181,16 @@ export default function WorkersPage() {
                             <HardHat className="w-4 h-4 mr-2" />
                             Green Workers Space
                         </Badge>
-                        <h1 className="text-4xl font-bold mb-4">Build your career as a <span className="gradient-text">Green Worker</span></h1>
+                        <h1 className="text-3xl sm:text-4xl font-bold mb-4">Build your career as a <span className="gradient-text">Green Worker</span></h1>
                         <p className="text-muted-foreground max-w-3xl mx-auto mb-8">
                             Create your profile once, get discovered by green projects, and access training opportunities that improve your practical skills and employability.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                            <Button size="lg" className="rounded-full px-8 py-6 bg-gradient-to-r from-lime-600 to-emerald-600 text-white" onClick={() => setShowForm(true)}>
+                            <Button size="lg" className="w-full sm:w-auto rounded-full px-8 py-6 bg-gradient-to-r from-lime-600 to-emerald-600 text-white" onClick={() => setShowForm(true)}>
                                 Start Registration
                                 <ArrowRight className="w-5 h-5 ml-2" />
                             </Button>
-                            <Button size="lg" variant="outline" className="rounded-full px-8 py-6 border-lime-200 text-lime-700 hover:bg-lime-50">
+                            <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-full px-8 py-6 border-lime-200 text-lime-700 hover:bg-lime-50">
                                 Explore Opportunities
                             </Button>
                         </div>
@@ -331,25 +332,41 @@ export default function WorkersPage() {
         <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-10">
-                    <Badge className="mb-4 px-4 py-1.5 rounded-full bg-lime-100/80 text-lime-700 border-lime-200/50 text-sm">
+                    <Badge className="mb-4 max-w-full whitespace-normal px-4 py-1.5 text-center text-sm leading-snug bg-lime-100/80 text-lime-700">
                         <HardHat className="w-4 h-4 mr-2" />
                         Green Workers Space
                     </Badge>
                     <h1 className="text-3xl sm:text-4xl font-bold mb-3">Green Workers <span className="gradient-text">Registration Form</span></h1>
                 </div>
 
-                <div className="flex items-center justify-center gap-2 mb-10">
-                    {["Personal", "Profile", "Skills", "Training", "Subscription"].map((label, index) => {
+                <div className="mb-10 space-y-4">
+                    <div className="rounded-2xl border border-lime-100 bg-card/80 p-4 shadow-sm sm:hidden">
+                        <div className="mb-3 flex items-center justify-between gap-3 text-xs font-medium text-muted-foreground">
+                            <span>Step {formStep} of {workerSteps.length}</span>
+                            <span className="text-right text-lime-700">{workerSteps[formStep - 1]}</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-lime-100">
+                            <div
+                                className="h-full rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 transition-all"
+                                style={{ width: `${(formStep / workerSteps.length) * 100}%` }}
+                            />
+                        </div>
+                    </div>
+                    <div className="hidden overflow-x-auto pb-2 sm:block">
+                        <div className="flex w-max min-w-full items-center justify-start gap-2 sm:justify-center">
+                    {workerSteps.map((label, index) => {
                         const s = index + 1;
                         return (
-                            <div key={label} className="flex items-center gap-2">
-                                <button onClick={() => setFormStep(s)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${formStep === s ? "bg-gradient-to-r from-lime-600 to-emerald-600 text-white" : formStep > s ? "bg-lime-100 text-lime-700" : "bg-muted text-muted-foreground"}`}>
+                            <div key={label} className="flex shrink-0 items-center gap-2">
+                                <button type="button" onClick={() => setFormStep(s)} className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${formStep === s ? "bg-gradient-to-r from-lime-600 to-emerald-600 text-white" : formStep > s ? "bg-lime-100 text-lime-700" : "bg-muted text-muted-foreground"}`}>
                                     {s}. {label}
                                 </button>
                                 {index < 4 && <div className={`w-8 h-0.5 rounded-full ${formStep > s ? "bg-lime-500" : "bg-muted"}`} />}
                             </div>
                         );
                     })}
+                        </div>
+                    </div>
                 </div>
 
                 <Card className="border-0 shadow-xl">
@@ -450,7 +467,7 @@ export default function WorkersPage() {
                                             <span className="font-semibold">Selected Plan:</span> {workerSubscriptionPlans.find((p) => p.id === selectedPlan)?.name} ({workerSubscriptionPlans.find((p) => p.id === selectedPlan)?.price})
                                         </p>
                                     </div>
-                                    <div className="grid md:grid-cols-3 gap-6">
+                                    <div className="grid gap-6 md:grid-cols-3">
                                         {workerSubscriptionPlans.map((plan) => (
                                             <Card key={plan.id} className={`relative cursor-pointer border-2 transition-all duration-500 overflow-hidden ${selectedPlan === plan.id ? `${plan.borderColor} shadow-xl ring-2 ring-lime-500` : "border-transparent shadow-lg hover:shadow-xl"}`} onClick={() => setSelectedPlan(plan.id)}>
                                                 {plan.popular && <Badge className="absolute top-4 right-4 rounded-full bg-gradient-to-r from-lime-500 to-emerald-500 text-white border-0 text-xs"><Sparkles className="w-3 h-3 mr-1" />Popular</Badge>}
@@ -468,16 +485,16 @@ export default function WorkersPage() {
 
                             {error && <p className="text-sm text-red-500 text-center">{error}</p>}
 
-                            <div className="flex justify-between pt-2">
-                                <Button variant="outline" className="rounded-full px-6" type="button" onClick={() => formStep === 1 ? setShowForm(false) : setFormStep((s) => Math.max(1, s - 1))} disabled={isLoading}>
+                            <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
+                                <Button variant="outline" className="w-full rounded-full px-6 sm:w-auto" type="button" onClick={() => formStep === 1 ? setShowForm(false) : setFormStep((s) => Math.max(1, s - 1))} disabled={isLoading}>
                                     <ArrowLeft className="w-4 h-4 mr-2" />Back
                                 </Button>
                                 {formStep < 5 ? (
-                                    <Button type="button" className="rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 text-white px-8 shadow-lg shadow-lime-500/20" onClick={() => setFormStep((s) => Math.min(5, s + 1))}>
+                                    <Button type="button" className="w-full rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 text-white px-8 shadow-lg shadow-lime-500/20 sm:w-auto" onClick={() => setFormStep((s) => Math.min(5, s + 1))}>
                                         Next<ArrowRight className="w-4 h-4 ml-2" />
                                     </Button>
                                 ) : (
-                                    <Button className="rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 text-white px-8 shadow-lg shadow-lime-500/20" type="submit" disabled={isLoading}>
+                                    <Button className="w-full rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 text-white px-8 shadow-lg shadow-lime-500/20 sm:w-auto" type="submit" disabled={isLoading}>
                                         {isLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</> : <><Send className="w-4 h-4 mr-2" />Submit Profile</>}
                                     </Button>
                                 )}

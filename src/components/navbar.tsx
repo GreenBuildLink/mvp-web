@@ -46,17 +46,17 @@ export function Navbar() {
                     : "bg-transparent"
                 }`}
         >
-            <div className="w-full px-4 sm:px-10 lg:px-24">
+            <div className="w-full px-3 sm:px-6 lg:px-24">
                 <div className="flex items-center justify-between h-16 lg:h-20">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2.5 group">
+                    <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-2.5 group">
                         <div className="relative">
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-xl shadow-emerald-500/30 group-hover:shadow-emerald-500/50 group-hover:scale-105 transition-all duration-300">
-                                <Leaf className="w-6 h-6 text-white" />
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-xl shadow-emerald-500/30 group-hover:shadow-emerald-500/50 group-hover:scale-105 transition-all duration-300">
+                                <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                             </div>
                             <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full animate-pulse border-2 border-white" />
                         </div>
-                        <span className="text-2xl font-black tracking-tight">
+                        <span className="truncate text-lg sm:text-2xl font-black tracking-tight">
                             <span className="text-foreground">GreenBuild</span>
                             <span className="text-emerald-500">Link</span>
                         </span>
@@ -143,15 +143,15 @@ export function Navbar() {
                                 <Menu className="w-5 h-5" />
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="right" className="w-80 p-0">
+                        <SheetContent side="right" className="w-full max-w-sm p-0">
                             <SheetTitle className="sr-only">Navigation</SheetTitle>
                             <div className="flex flex-col h-full">
                                 <div className="flex items-center justify-between p-5 border-b border-emerald-100 dark:border-emerald-900/30">
-                                    <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
+                                    <Link href="/" className="flex min-w-0 items-center gap-2" onClick={() => setOpen(false)}>
                                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
                                             <Leaf className="w-5 h-5 text-white" />
                                         </div>
-                                        <span className="text-xl font-black tracking-tight">
+                                        <span className="truncate text-lg sm:text-xl font-black tracking-tight">
                                             <span className="text-foreground">GreenBuild</span><span className="text-emerald-500">Link</span>
                                         </span>
                                     </Link>

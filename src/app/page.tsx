@@ -60,17 +60,17 @@ export default function HomePage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 pb-16 sm:pt-20 sm:pb-0">
         {/* Animated background */}
         <div className="absolute inset-0 hero-gradient animate-gradient-x" />
         <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-300/20 dark:bg-emerald-600/10 rounded-full blur-3xl animate-float" />
+          <div className="absolute top-20 left-0 sm:left-10 w-48 h-48 sm:w-72 sm:h-72 bg-emerald-300/20 dark:bg-emerald-600/10 rounded-full blur-3xl animate-float" />
           <div
-            className="absolute bottom-20 right-10 w-96 h-96 bg-teal-300/20 dark:bg-teal-600/10 rounded-full blur-3xl animate-float"
+            className="absolute bottom-12 right-0 sm:right-10 w-56 h-56 sm:w-96 sm:h-96 bg-teal-300/20 dark:bg-teal-600/10 rounded-full blur-3xl animate-float"
             style={{ animationDelay: "3s" }}
           />
           <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-200/10 dark:bg-emerald-700/5 rounded-full blur-3xl"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[320px] sm:w-[600px] sm:h-[600px] bg-emerald-200/10 dark:bg-emerald-700/5 rounded-full blur-3xl"
           />
         </div>
 
@@ -86,24 +86,24 @@ export default function HomePage() {
                 left: `${10 + i * 22}%`,
               }}
             >
-              <item.icon className="w-16 h-16 text-emerald-600" />
+              <item.icon className="w-10 h-10 sm:w-16 sm:h-16 text-emerald-600" />
             </div>
           ))}
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="relative z-10 mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <div className="animate-fade-in-up">
-            <Badge className="mb-6 px-5 py-2 rounded-full bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/50 dark:border-emerald-800/30 text-sm font-medium backdrop-blur-sm">
+            <Badge className="mb-6 max-w-full whitespace-normal px-4 py-2 text-center text-xs font-medium leading-snug bg-emerald-100/80 text-emerald-700 backdrop-blur-sm dark:border-emerald-800/30 dark:bg-emerald-900/40 dark:text-emerald-300 sm:px-5 sm:text-sm">
               <Sparkles className="w-4 h-4 mr-2" />
               GreenBuildLink : An Integrated Ecosystem for Green Building
             </Badge>
           </div>
 
-          <h1 className="animate-fade-in-up stagger-1 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight">
+          <h1 className="animate-fade-in-up stagger-1 mb-6 text-[2.7rem] font-bold leading-[0.95] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
             Build a{" "}
             <span className="gradient-text">Sustainable Future</span>
             <br />
-            <span className="text-muted-foreground font-normal text-3xl sm:text-4xl md:text-5xl lg:text-5xl">
+            <span className="text-muted-foreground text-[2rem] font-normal leading-tight sm:text-4xl md:text-5xl lg:text-5xl">
               Starting with a Smart Link
             </span>
           </h1>
@@ -113,21 +113,21 @@ export default function HomePage() {
           </p>
 
           <div className="animate-fade-in-up stagger-3 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/consultation/request">
+            <Link href="/consultation/request" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="rounded-full px-8 py-6 text-base bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:from-emerald-700 hover:to-teal-700 transition-all duration-500 group"
+                className="w-full rounded-full px-8 py-6 text-base bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:from-emerald-700 hover:to-teal-700 transition-all duration-500 group"
               >
                 <Compass className="w-5 h-5 mr-2" />
                 Request Service
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Link href="/company">
+            <Link href="/company" className="w-full sm:w-auto">
               <Button
                 size="lg"
                 variant="outline"
-                className="rounded-full px-8 py-6 text-base border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50/50 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition-all duration-500"
+                className="w-full rounded-full px-8 py-6 text-base border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50/50 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition-all duration-500"
               >
                 <Building2 className="w-5 h-5 mr-2" />
                 Explore Green Industries
@@ -136,11 +136,11 @@ export default function HomePage() {
           </div>
 
           {/* Stats */}
-          <div className="animate-fade-in-up stagger-4 mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="animate-fade-in-up stagger-4 mt-16 grid grid-cols-2 gap-4 sm:mt-20 sm:gap-6 md:grid-cols-4">
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="glass-card rounded-2xl p-5 group hover:scale-105 transition-transform duration-500"
+                className="glass-card group rounded-2xl p-4 transition-transform duration-500 hover:scale-105 sm:p-5"
               >
                 <stat.icon className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
                 <div className="text-2xl sm:text-3xl font-bold gradient-text">
@@ -236,8 +236,8 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/company/profile">
-                  <Button className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 group/btn">
+                <Link href="/company/profile" className="block">
+                  <Button className="w-full sm:w-auto rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 group/btn">
                     Join as Industry
                     <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
                   </Button>
@@ -271,8 +271,8 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/concepteur">
-                  <Button className="rounded-full bg-gradient-to-r from-teal-600 to-sky-600 text-white shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 group/btn">
+                <Link href="/concepteur" className="block">
+                  <Button className="w-full sm:w-auto rounded-full bg-gradient-to-r from-teal-600 to-sky-600 text-white shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 group/btn">
                     Join as Designer
                     <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
                   </Button>
@@ -306,8 +306,8 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/workers">
-                  <Button className="rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 text-white shadow-lg shadow-lime-500/20 hover:shadow-lime-500/40 group/btn">
+                <Link href="/workers" className="block">
+                  <Button className="w-full sm:w-auto rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 text-white shadow-lg shadow-lime-500/20 hover:shadow-lime-500/40 group/btn">
                     Join as Worker
                     <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
                   </Button>
@@ -322,8 +322,8 @@ export default function HomePage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-2xl shadow-emerald-900/30">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24" />
+            <div className="absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64 bg-white/5 rounded-full -translate-y-20 sm:-translate-y-32 translate-x-20 sm:translate-x-32" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 bg-white/5 rounded-full translate-y-16 sm:translate-y-24 -translate-x-16 sm:-translate-x-24" />
             <CardContent className="relative p-10 sm:p-14 text-center">
               <Leaf className="w-12 h-12 mx-auto mb-6 text-emerald-200" />
               <h2 className="text-3xl sm:text-4xl font-bold mb-4">
@@ -332,10 +332,10 @@ export default function HomePage() {
               <p className="text-emerald-100 mb-8 max-w-lg mx-auto text-lg">
                 Be part of the growing community of professionals transforming construction sustainably with GreenBuildLink.
               </p>
-              <Link href="/concepteur/new-project">
+              <Link href="/concepteur/new-project" className="block w-full sm:w-auto">
                 <Button
                   size="lg"
-                  className="rounded-full px-10 py-6 text-base bg-white text-emerald-700 hover:bg-emerald-50 shadow-xl hover:shadow-2xl transition-all duration-500 font-semibold"
+                  className="w-full sm:w-auto rounded-full px-10 py-6 text-base bg-white text-emerald-700 hover:bg-emerald-50 shadow-xl hover:shadow-2xl transition-all duration-500 font-semibold"
                 >
                   Start Now
                   <ArrowRight className="w-5 h-5 ml-2" />

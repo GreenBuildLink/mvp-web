@@ -147,21 +147,23 @@ export default function CompanyDetailPage({
 
                 {/* Products Section */}
                 <Tabs defaultValue="grid" className="space-y-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-2">
                             <Package className="w-5 h-5 text-emerald-500" />
                             <h2 className="text-xl font-semibold">
                                 Catalogue Produits ({company.products.length})
                             </h2>
                         </div>
-                        <TabsList className="rounded-full bg-emerald-50 dark:bg-emerald-900/30">
-                            <TabsTrigger value="grid" className="rounded-full">
-                                Grille
-                            </TabsTrigger>
-                            <TabsTrigger value="list" className="rounded-full">
-                                Liste
-                            </TabsTrigger>
-                        </TabsList>
+                        <div className="overflow-x-auto pb-2">
+                            <TabsList className="inline-flex min-w-max rounded-full bg-emerald-50 dark:bg-emerald-900/30">
+                                <TabsTrigger value="grid" className="rounded-full whitespace-nowrap">
+                                    Grille
+                                </TabsTrigger>
+                                <TabsTrigger value="list" className="rounded-full whitespace-nowrap">
+                                    Liste
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
                     </div>
 
                     {/* Grid View */}
@@ -258,9 +260,9 @@ export default function CompanyDetailPage({
                                     style={{ animationDelay: `${i * 0.1}s` }}
                                 >
                                     <CardContent className="p-6">
-                                        <div className="flex flex-col lg:flex-row gap-6">
+                                        <div className="flex flex-col gap-6 lg:flex-row">
                                             <div className="flex-1">
-                                                <div className="flex items-center gap-3 mb-3">
+                                                <div className="mb-3 flex flex-wrap items-center gap-3">
                                                     <h3 className="text-lg font-semibold">
                                                         {product.name}
                                                     </h3>
@@ -294,7 +296,7 @@ export default function CompanyDetailPage({
                                                     ))}
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col items-end justify-between shrink-0">
+                                            <div className="flex flex-col gap-3 sm:items-end sm:justify-between lg:shrink-0">
                                                 {product.price && (
                                                     <span className="text-xl font-bold gradient-text">
                                                         {product.price}

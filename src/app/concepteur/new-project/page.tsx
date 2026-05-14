@@ -48,6 +48,13 @@ const keySkillOptions = [
 const objectiveOptions = ["Learn basics", "Get certified", "Find job opportunities", "Networking", "Work on real projects"];
 const learningFormats = ["Online", "In-person", "Hybrid"];
 const knowledgeOptions = ["No knowledge", "Basic understanding", "Intermediate", "Advanced", "Expert"];
+const designerSteps = [
+    { n: 1, label: "Personal", icon: User },
+    { n: 2, label: "Background", icon: Briefcase },
+    { n: 3, label: "Goals", icon: Target },
+    { n: 4, label: "Availability", icon: CheckCircle2 },
+    { n: 5, label: "Subscription", icon: Crown },
+];
 
 const subscriptionPlans = [
     {
@@ -195,7 +202,7 @@ export default function NewProjectPage() {
                                 <FileText className="w-4 h-4 text-emerald-500" />
                                 Registration Summary
                             </h4>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                                 <span className="text-muted-foreground">Name:</span>
                                 <span className="font-medium">{fullName}</span>
                                 <span className="text-muted-foreground">Expertise:</span>
@@ -223,29 +230,39 @@ export default function NewProjectPage() {
         <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-10">
-                    <Badge className="mb-4 px-4 py-1.5 rounded-full bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/50 text-sm">
+                    <Badge className="mb-4 max-w-full whitespace-normal px-4 py-1.5 text-center text-sm leading-snug bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                         <Compass className="w-4 h-4 mr-2" />
                         Green Designers Hub — Registration
                     </Badge>
                     <h1 className="text-3xl sm:text-4xl font-bold mb-4">Join as a <span className="gradient-text">Green Designer</span></h1>
                 </div>
 
-                <div className="flex items-center justify-center gap-2 mb-10">
-                    {[
-                        { n: 1, label: "Personal", icon: User },
-                        { n: 2, label: "Background", icon: Briefcase },
-                        { n: 3, label: "Goals", icon: Target },
-                        { n: 4, label: "Availability", icon: CheckCircle2 },
-                        { n: 5, label: "Subscription", icon: Crown },
-                    ].map((s, i) => (
-                        <div key={s.n} className="flex items-center gap-2">
-                            <button onClick={() => setStep(s.n)} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${step === s.n ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25" : step > s.n ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" : "bg-muted text-muted-foreground"}`}>
-                                <s.icon className="w-4 h-4" />
-                                <span className="hidden sm:inline">{s.label}</span>
-                            </button>
-                            {i < 4 && <div className={`w-8 h-0.5 rounded-full transition-colors duration-300 ${step > s.n ? "bg-emerald-500" : "bg-muted"}`} />}
+                <div className="mb-10 space-y-4">
+                    <div className="rounded-2xl border border-emerald-100 bg-card/80 p-4 shadow-sm sm:hidden">
+                        <div className="mb-3 flex items-center justify-between gap-3 text-xs font-medium text-muted-foreground">
+                            <span>Step {step} of {designerSteps.length}</span>
+                            <span className="text-right text-emerald-700">{designerSteps[step - 1].label}</span>
                         </div>
-                    ))}
+                        <div className="h-2 rounded-full bg-emerald-100">
+                            <div
+                                className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 transition-all"
+                                style={{ width: `${(step / designerSteps.length) * 100}%` }}
+                            />
+                        </div>
+                    </div>
+                    <div className="hidden overflow-x-auto pb-2 sm:block">
+                        <div className="flex w-max min-w-full items-center justify-start gap-2 sm:justify-center">
+                        {designerSteps.map((s, i) => (
+                            <div key={s.n} className="flex shrink-0 items-center gap-2">
+                                <button type="button" onClick={() => setStep(s.n)} className={`flex items-center gap-2 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${step === s.n ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25" : step > s.n ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" : "bg-muted text-muted-foreground"}`}>
+                                    <s.icon className="w-4 h-4" />
+                                    <span>{s.label}</span>
+                                </button>
+                                {i < designerSteps.length - 1 && <div className={`w-8 h-0.5 rounded-full transition-colors duration-300 ${step > s.n ? "bg-emerald-500" : "bg-muted"}`} />}
+                            </div>
+                        ))}
+                        </div>
+                    </div>
                 </div>
 
                 {step === 1 && (
@@ -265,7 +282,7 @@ export default function NewProjectPage() {
                                 </div>
                                 <div className="space-y-2"><Label>Current position / job title *</Label><Input placeholder="Ex: Junior Architect" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
                             </div>
-                            <div className="flex justify-end pt-4"><Button className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8" onClick={() => setStep(2)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
+                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end"><Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-8 text-white sm:w-auto" onClick={() => setStep(2)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
                         </CardContent>
                     </Card>
                 )}
@@ -303,7 +320,7 @@ export default function NewProjectPage() {
                                     {keySkills.includes("Other") && (<Input placeholder="Specify other key skill" value={otherKeySkill} onChange={(e) => setOtherKeySkill(e.target.value)} className="rounded-xl h-12 border-emerald-200/50 mt-3" />)}
                                 </div>
                             </div>
-                            <div className="flex justify-between pt-4"><Button variant="outline" className="rounded-full px-6" onClick={() => setStep(1)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button><Button className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8" onClick={() => setStep(3)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
+                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-between"><Button variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep(1)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button><Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-8 text-white sm:w-auto" onClick={() => setStep(3)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
                         </CardContent>
                     </Card>
                 )}
@@ -325,7 +342,7 @@ export default function NewProjectPage() {
                                 <div className="space-y-2"><Label>Main objectives</Label><div className="grid sm:grid-cols-2 gap-3">{objectiveOptions.map((option) => (<label key={option} className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={objectives.includes(option)} onChange={() => toggleArrayValue(option, setObjectives)} className="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" />{option}</label>))}</div></div>
                                 <div className="space-y-2"><Label>Preferred learning format *</Label><Select value={learningFormat} onValueChange={setLearningFormat}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select format" /></SelectTrigger><SelectContent>{learningFormats.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select></div>
                             </div>
-                            <div className="flex justify-between pt-4"><Button variant="outline" className="rounded-full px-6" onClick={() => setStep(2)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button><Button className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8" onClick={() => setStep(4)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
+                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-between"><Button variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep(2)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button><Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-8 text-white sm:w-auto" onClick={() => setStep(4)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
                         </CardContent>
                     </Card>
                 )}
@@ -349,7 +366,7 @@ export default function NewProjectPage() {
                                 <h3 className="font-semibold">9. Consent</h3>
                                 <label className="flex items-start gap-3 text-sm text-muted-foreground"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" /><span>I agree to the use of my data for program placement and communication.</span></label>
                             </div>
-                            <div className="flex justify-between pt-2"><Button variant="outline" className="rounded-full px-6" onClick={() => setStep(3)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button><Button className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8" onClick={() => setStep(5)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
+                            <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between"><Button variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep(3)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button><Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-8 text-white sm:w-auto" onClick={() => setStep(5)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
                         </CardContent>
                     </Card>
                 )}
@@ -364,7 +381,7 @@ export default function NewProjectPage() {
                                         <span className="font-semibold">Selected Plan:</span> {subscriptionPlans.find((p) => p.id === selectedPlan)?.name} ({subscriptionPlans.find((p) => p.id === selectedPlan)?.price})
                                     </p>
                                 </div>
-                                <div className="grid md:grid-cols-3 gap-6">
+                                <div className="grid gap-6 md:grid-cols-3">
                                     {subscriptionPlans.map((plan) => (
                                         <Card key={plan.id} className={`relative cursor-pointer border-2 transition-all duration-500 overflow-hidden ${selectedPlan === plan.id ? `${plan.borderColor} shadow-xl ring-2 ring-emerald-500` : "border-transparent shadow-lg hover:shadow-xl"}`} onClick={() => setSelectedPlan(plan.id)}>
                                             {plan.popular && <Badge className="absolute top-4 right-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-xs"><Sparkles className="w-3 h-3 mr-1" />Popular</Badge>}
@@ -378,9 +395,9 @@ export default function NewProjectPage() {
                                     ))}
                                 </div>
                                 {error && <p className="text-sm text-red-500 text-center">{error}</p>}
-                                <div className="flex justify-between pt-2">
-                                    <Button type="button" variant="outline" className="rounded-full px-6" onClick={() => setStep(4)} disabled={isLoading}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button>
-                                    <Button type="submit" className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-10 shadow-lg shadow-emerald-500/20 text-base" disabled={isLoading}>
+                                <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
+                                    <Button type="button" variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep(4)} disabled={isLoading}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button>
+                                    <Button type="submit" className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-10 shadow-lg shadow-emerald-500/20 text-base sm:w-auto" disabled={isLoading}>
                                         {isLoading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Sending...</> : <><Send className="w-5 h-5 mr-2" />Submit Registration</>}
                                     </Button>
                                 </div>

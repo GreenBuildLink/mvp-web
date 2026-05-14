@@ -13,7 +13,7 @@ export function Footer() {
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-xl shadow-emerald-500/25">
                 <Leaf className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-black tracking-tight">
+              <span className="text-xl sm:text-2xl font-black tracking-tight">
                 <span className="text-foreground">GreenBuild</span>
                 <span className="text-emerald-500">Link</span>
               </span>
@@ -86,11 +86,11 @@ export function Footer() {
 
         <Separator className="my-10 bg-emerald-100/50 dark:bg-emerald-900/20" />
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
           <p className="text-xs text-muted-foreground">
             © 2026 GreenBuildLink. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground sm:justify-end">
             <span className="hover:text-emerald-600 cursor-pointer transition-colors">
               Privacy Policy
             </span>

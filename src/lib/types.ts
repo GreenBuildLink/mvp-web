@@ -113,8 +113,6 @@ export type ConsultationSubmission = {
     created_at: string;
 };
 
-export type SubmissionType = 'project' | 'company' | 'worker' | 'consultation';
-
 export type Certification = {
     name: string;
     level: string;
@@ -158,29 +156,6 @@ export type Company = {
     products: ProductData[];
 };
 
-export type ProjectData = {
-    id: string;
-    title?: string;
-    description?: string;
-    category?: string;
-    location: string;
-    status: string;
-    createdAt: string;
-    personalInfo?: {
-        name?: string;
-        firstName?: string;
-        lastName?: string;
-        email: string;
-        phone: string;
-        address?: string;
-    };
-    specification?: string;
-    surface?: number;
-    facadeDimensions?: { width: number; height: number };
-    services?: string[];
-    wwr?: number;
-};
-
 export const PRODUCT_CATEGORIES = [
     "Isolation Thermique",
     "Panneaux Solaires",
@@ -192,5 +167,3 @@ export const PRODUCT_CATEGORIES = [
     "Matériaux de Construction",
     "Éclairage LED",
 ] as const;
-
-export type ProductCategory = typeof PRODUCT_CATEGORIES[number];
