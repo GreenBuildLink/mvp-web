@@ -95,7 +95,8 @@ export default function HomePage() {
           <div className="animate-fade-in-up">
             <Badge className="mb-6 max-w-full whitespace-normal px-4 py-2 text-center text-xs font-medium leading-snug bg-emerald-100/80 text-emerald-700 backdrop-blur-sm dark:border-emerald-800/30 dark:bg-emerald-900/40 dark:text-emerald-300 sm:px-5 sm:text-sm">
               <Sparkles className="w-4 h-4 mr-2" />
-              GreenBuildLink : An Integrated Ecosystem for Green Building
+              GreenBuildLink : An Integrated Ecosystem for{" "}
+              <span className="whitespace-nowrap">Green Building</span>
             </Badge>
           </div>
 
@@ -109,7 +110,8 @@ export default function HomePage() {
           </h1>
 
           <p className="animate-fade-in-up stagger-2 max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground mb-10 leading-relaxed">
-            Linking all stakeholders to deliver efficient and sustainable projects.
+            Linking all stakeholders to deliver{" "}
+            <span className="whitespace-nowrap">efficient and sustainable projects</span>.
           </p>
 
           <div className="animate-fade-in-up stagger-3 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -202,7 +204,7 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               Link Up with the{" "}
-              <span className="gradient-text">Green Community</span>
+              <span className="gradient-text whitespace-nowrap">Green Community</span>
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
               Whether you&apos;re a Green Industry, a Green Designer, or a skilled worker, GreenBuildLink is your link to sustainable success.

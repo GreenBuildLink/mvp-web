@@ -83,12 +83,12 @@ const companyPayloadSchema = z.object({
     type: z.literal("company"),
     companyName: z.string().trim().min(1).max(120),
     companyDescription: z.string().trim().min(1).max(2000),
-    companyAddress: optionalShortText,
-    companyCity: optionalShortText,
-    companyCountry: optionalShortText,
-    companyLocation: optionalShortText,
-    companyEmail: z.string().trim().email().max(254).optional().or(z.literal("")),
-    companyPhone: optionalShortText,
+    companyAddress: z.string().trim().min(1).max(160),
+    companyCity: z.string().trim().min(1).max(160),
+    companyCountry: z.string().trim().min(1).max(160),
+    companyLocation: z.string().trim().min(1).max(160),
+    companyEmail: z.string().trim().email().max(254),
+    companyPhone: z.string().trim().min(1).max(160),
     companyWebsite: z.string().trim().max(200).optional().or(z.literal("")),
     socialMediaLinks: optionalLongText,
     linkedInUrl: z.string().trim().max(250).optional().or(z.literal("")),
@@ -100,7 +100,7 @@ const companyPayloadSchema = z.object({
     yearsOfOperation: optionalShortText,
     mainSector: optionalShortText,
     collaborationInterests: z.array(z.string().trim().min(1).max(120)).max(20).optional(),
-    publishConsent: z.boolean().optional(),
+    publishConsent: z.literal(true),
     selectedPlan: z.string().trim().max(80).optional().or(z.literal("")),
     products: z.array(companyProductSchema).max(100).optional(),
 });
@@ -108,7 +108,7 @@ const companyPayloadSchema = z.object({
 const workerPayloadSchema = z.object({
     type: z.literal("worker"),
     name: z.string().trim().min(1).max(120),
-    phone: optionalShortText,
+    phone: z.string().trim().min(1).max(50),
     email: z.string().trim().email().max(254),
     age: optionalShortText,
     occupation: optionalShortText,
@@ -156,7 +156,7 @@ const consultationPayloadSchema = z.object({
     timelineStart: z.string().trim().min(1).max(40),
     timelineDelivery: z.string().trim().min(1).max(40),
     requiredServices: z.array(z.string().trim().min(1).max(160)).min(1).max(20),
-    estimatedQuote: z.boolean(),
+    estimatedQuote: z.literal(true),
 });
 
 const waitlistSchema = z.discriminatedUnion("type", [
@@ -492,14 +492,6 @@ function buildConsultationEmail(data: FormDataMap) {
 // ─── Route handler ────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
     try {
-        if (!TO || !process.env.RESEND_API_KEY) {
-            console.error("Waitlist API misconfigured: missing CONTACT_EMAIL or RESEND_API_KEY");
-            return NextResponse.json(
-                { error: "Email service is not configured" },
-                { status: 500 },
-            );
-        }
-
         const rawData = await req.json();
         const parsed = waitlistSchema.safeParse(rawData);
 
@@ -529,18 +521,6 @@ export async function POST(req: NextRequest) {
             html = buildConsultationEmail(rest);
         } else {
             return NextResponse.json({ error: "Unknown form type" }, { status: 400 });
-        }
-
-        const { error } = await resend.emails.send({
-            from: "GreenBuildLink <onboarding@resend.dev>",
-            to: TO,
-            subject,
-            html,
-        });
-
-        if (error) {
-            console.error("Resend error:", error);
-            return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
         }
 
         try {
@@ -578,12 +558,12 @@ export async function POST(req: NextRequest) {
                 await insertCompanySubmission({
                     company_name: text(rest.companyName),
                     company_description: text(rest.companyDescription),
-                    company_address: text(rest.companyAddress) || null,
-                    company_city: text(rest.companyCity) || null,
-                    company_country: text(rest.companyCountry) || null,
-                    company_location: text(rest.companyLocation) || null,
-                    company_email: text(rest.companyEmail) || null,
-                    company_phone: text(rest.companyPhone) || null,
+                    company_address: text(rest.companyAddress),
+                    company_city: text(rest.companyCity),
+                    company_country: text(rest.companyCountry),
+                    company_location: text(rest.companyLocation),
+                    company_email: text(rest.companyEmail),
+                    company_phone: text(rest.companyPhone),
                     company_website: text(rest.companyWebsite) || null,
                     social_media_links: {
                         linkedin: text(rest.linkedInUrl),
@@ -609,7 +589,7 @@ export async function POST(req: NextRequest) {
                 await insertWorkerSubmission({
                     name: text(rest.name),
                     email: text(rest.email),
-                    phone: text(rest.phone) || null,
+                    phone: text(rest.phone),
                     location: text(rest.location),
                     age: text(rest.age) || null,
                     occupation: text(rest.occupation) || null,
@@ -647,7 +627,7 @@ export async function POST(req: NextRequest) {
                     position: text(rest.position),
                     project_country: text(rest.projectCountry),
                     project_city: text(rest.projectCity),
-                    climate_zone: text(rest.climateZone) || null,
+                    climate_zone: text(rest.climateZone),
                     project_type: text(rest.projectType),
                     project_stage: text(rest.projectStage),
                     land_area: text(rest.landArea),
@@ -660,9 +640,27 @@ export async function POST(req: NextRequest) {
             }
         } catch (dbError) {
             console.error("Database insert error:", dbError);
+            return NextResponse.json({ error: "Failed to save submission" }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true });
+        if (!TO || !process.env.RESEND_API_KEY) {
+            console.warn("Waitlist email skipped: missing CONTACT_EMAIL or RESEND_API_KEY");
+            return NextResponse.json({ success: true, emailSent: false });
+        }
+
+        const { error } = await resend.emails.send({
+            from: "GreenBuildLink <onboarding@resend.dev>",
+            to: TO,
+            subject,
+            html,
+        });
+
+        if (error) {
+            console.error("Resend error:", error);
+            return NextResponse.json({ success: true, emailSent: false });
+        }
+
+        return NextResponse.json({ success: true, emailSent: true });
     } catch (err) {
         console.error("Waitlist API error:", err);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });

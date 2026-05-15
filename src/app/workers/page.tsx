@@ -34,6 +34,7 @@ import {
     Users,
     MapPin,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const workerOccupations = ["Worker", "Technician", "Installer", "Supervisor", "Student", "Unemployed"];
 const workerTrades = ["Masonry", "Electrical", "Plumbing", "HVAC", "Solar installation", "Insulation works", "Other"];
@@ -72,6 +73,16 @@ function toggleValue(value: string, items: string[], setItems: (next: string[]) 
     setItems(items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
 }
 
+function hasText(value: string) {
+    return value.trim().length > 0;
+}
+
+function isValidEmail(value: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+type FieldErrors = Record<string, string>;
+
 export default function WorkersPage() {
     const router = useRouter();
     const [showForm, setShowForm] = useState(false);
@@ -79,6 +90,7 @@ export default function WorkersPage() {
     const [submitted, setSubmitted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
@@ -110,13 +122,93 @@ export default function WorkersPage() {
     const [consent, setConsent] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState("verified");
 
-    const handleWorkerSubmit = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (!consent) {
-            setError("Please agree to share data for job opportunities and training.");
+    const getStepErrors = (stepNumber: number) => {
+        if (stepNumber === 1) {
+            const errors: FieldErrors = {};
+
+            if (!hasText(name)) errors.name = "Full name is required.";
+            if (!hasText(phone)) errors.phone = "Phone number is required.";
+            if (!hasText(email)) {
+                errors.email = "Email is required.";
+            } else if (!isValidEmail(email)) {
+                errors.email = "Enter a valid email address.";
+            }
+            if (!hasText(location)) errors.location = "City / Region is required.";
+
+            return errors;
+        }
+
+        if (stepNumber === 2) {
+            const errors: FieldErrors = {};
+
+            if (!hasText(trade)) errors.trade = "Trade is required.";
+            if (trade === "Other" && !hasText(otherTrade)) errors.otherTrade = "Please specify your trade.";
+
+            return errors;
+        }
+
+        if (stepNumber === 3) {
+            const errors: FieldErrors = {};
+
+            if (tasks.includes("Other") && !hasText(otherTask)) errors.otherTask = "Please specify the other task.";
+
+            return errors;
+        }
+
+        if (stepNumber === 4) {
+            const errors: FieldErrors = {};
+
+            if (wantsTraining === "Yes" && !hasText(preferredTrainingType)) {
+                errors.preferredTrainingType = "Preferred training type is required.";
+            }
+
+            if (!consent) {
+                errors.consent = "You must agree to share data for job opportunities and training.";
+            }
+
+            return errors;
+        }
+
+        return {};
+    };
+
+    const moveToStep = (targetStep: number) => {
+        if (targetStep <= formStep) {
+            setFieldErrors({});
+            setError("");
+            setFormStep(targetStep);
             return;
         }
+
+        for (let stepNumber = 1; stepNumber < targetStep; stepNumber += 1) {
+            const stepErrors = getStepErrors(stepNumber);
+
+            if (Object.keys(stepErrors).length > 0) {
+                setFieldErrors(stepErrors);
+                setFormStep(stepNumber);
+                return;
+            }
+        }
+
+        setFieldErrors({});
+        setError("");
+        setFormStep(targetStep);
+    };
+
+    const handleWorkerSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        for (const stepNumber of [1, 2, 3, 4]) {
+            const stepErrors = getStepErrors(stepNumber);
+
+            if (Object.keys(stepErrors).length > 0) {
+                setFieldErrors(stepErrors);
+                setFormStep(stepNumber);
+                return;
+            }
+        }
+
         setIsLoading(true);
+        setFieldErrors({});
         setError("");
         try {
             const res = await fetch("/api/waitlist", {
@@ -163,6 +255,24 @@ export default function WorkersPage() {
             setIsLoading(false);
         }
     };
+
+    const clearFieldError = (field: string) => {
+        setFieldErrors((prev) => {
+            if (!prev[field]) return prev;
+            const next = { ...prev };
+            delete next[field];
+            return next;
+        });
+    };
+
+    const getFieldClass = (field: string, defaultClassName: string) =>
+        cn(
+            defaultClassName,
+            fieldErrors[field] && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20",
+        );
+
+    const renderFieldError = (field: string) =>
+        fieldErrors[field] ? <p className="text-sm text-red-500">{fieldErrors[field]}</p> : null;
 
     if (!showForm) {
         return (
@@ -340,7 +450,7 @@ export default function WorkersPage() {
                     currentStep={formStep}
                     steps={workerSteps.map((label) => ({ label }))}
                     className="mb-10"
-                    onStepSelect={setFormStep}
+                    onStepSelect={moveToStep}
                 />
 
                 <Card className="border-0 shadow-xl">
@@ -354,12 +464,12 @@ export default function WorkersPage() {
                                 <div className="ui-form-section-worker">
                                     <h3 className="font-semibold">1. Personal Information</h3>
                                     <div className="grid sm:grid-cols-2 gap-4">
-                                        <div className="space-y-2"><Label>Full Name *</Label><Input placeholder="Your full name" value={name} onChange={(e) => setName(e.target.value)} className="ui-field-worker" /></div>
-                                        <div className="space-y-2"><Label>Phone Number *</Label><Input placeholder="+216 ..." value={phone} onChange={(e) => setPhone(e.target.value)} className="ui-field-worker" /></div>
+                                        <div className="space-y-2"><Label>Full Name *</Label><Input placeholder="Your full name" value={name} onChange={(e) => { setName(e.target.value); clearFieldError("name"); }} className={getFieldClass("name", "ui-field-worker")} />{renderFieldError("name")}</div>
+                                        <div className="space-y-2"><Label>Phone Number *</Label><Input placeholder="+216 ..." value={phone} onChange={(e) => { setPhone(e.target.value); clearFieldError("phone"); }} className={getFieldClass("phone", "ui-field-worker")} />{renderFieldError("phone")}</div>
                                     </div>
                                     <div className="grid sm:grid-cols-2 gap-4">
-                                        <div className="space-y-2"><Label>Email *</Label><Input type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="ui-field-worker" /></div>
-                                        <div className="space-y-2"><Label>City / Region *</Label><Input placeholder="Ex: Tunis / Ariana" value={location} onChange={(e) => setLocation(e.target.value)} className="ui-field-worker" /></div>
+                                        <div className="space-y-2"><Label>Email *</Label><Input type="email" placeholder="your@email.com" value={email} onChange={(e) => { setEmail(e.target.value); clearFieldError("email"); }} className={getFieldClass("email", "ui-field-worker")} />{renderFieldError("email")}</div>
+                                        <div className="space-y-2"><Label>City / Region *</Label><Input placeholder="Ex: Tunis / Ariana" value={location} onChange={(e) => { setLocation(e.target.value); clearFieldError("location"); }} className={getFieldClass("location", "ui-field-worker")} />{renderFieldError("location")}</div>
                                     </div>
                                     <div className="space-y-2"><Label>Age (optional)</Label><Input placeholder="Ex: 29" value={age} onChange={(e) => setAge(e.target.value)} className="ui-field-worker" /></div>
                                 </div>
@@ -369,8 +479,8 @@ export default function WorkersPage() {
                                 <div className="ui-form-section-worker">
                                     <h3 className="font-semibold">2. Professional Profile</h3>
                                     <div className="space-y-2"><Label>Current occupation</Label><Select value={occupation} onValueChange={setOccupation}><SelectTrigger className="ui-field-worker"><SelectValue placeholder="Select occupation" /></SelectTrigger><SelectContent>{workerOccupations.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
-                                    <div className="space-y-2"><Label>Trade</Label><Select value={trade} onValueChange={setTrade}><SelectTrigger className="ui-field-worker"><SelectValue placeholder="Select trade" /></SelectTrigger><SelectContent>{workerTrades.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
-                                    {trade === "Other" && <div className="space-y-2"><Label>Other (specify)</Label><Input placeholder="Specify your trade" value={otherTrade} onChange={(e) => setOtherTrade(e.target.value)} className="ui-field-worker" /></div>}
+                                    <div className="space-y-2"><Label>Trade *</Label><Select value={trade} onValueChange={(value) => { setTrade(value); clearFieldError("trade"); if (value !== "Other") clearFieldError("otherTrade"); }}><SelectTrigger className={getFieldClass("trade", "ui-field-worker")}><SelectValue placeholder="Select trade" /></SelectTrigger><SelectContent>{workerTrades.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select>{renderFieldError("trade")}</div>
+                                    {trade === "Other" && <div className="space-y-2"><Label>Other (specify) *</Label><Input placeholder="Specify your trade" value={otherTrade} onChange={(e) => { setOtherTrade(e.target.value); clearFieldError("otherTrade"); }} className={getFieldClass("otherTrade", "ui-field-worker")} />{renderFieldError("otherTrade")}</div>}
                                     <div className="space-y-2"><Label>Years of experience</Label><Select value={yearsExperience} onValueChange={setYearsExperience}><SelectTrigger className="ui-field-worker"><SelectValue placeholder="Select range" /></SelectTrigger><SelectContent>{workerExperienceOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
                                 </div>
                             )}
@@ -379,8 +489,8 @@ export default function WorkersPage() {
                                 <>
                                     <div className="ui-form-section-worker">
                                         <h3 className="font-semibold">3. Skills & Practical Experience</h3>
-                                        <div className="space-y-2"><Label>What tasks can you perform?</Label><div className="grid sm:grid-cols-2 gap-3">{taskOptions.map((option) => <label key={option} className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={tasks.includes(option)} onChange={() => toggleValue(option, tasks, setTasks)} className="rounded border-lime-300 text-lime-600 focus:ring-lime-500" />{option}</label>)}</div></div>
-                                        {tasks.includes("Other") && <div className="space-y-2"><Label>Other task</Label><Input placeholder="Specify other task" value={otherTask} onChange={(e) => setOtherTask(e.target.value)} className="ui-field-worker" /></div>}
+                                        <div className="space-y-2"><Label>What tasks can you perform?</Label><div className="grid sm:grid-cols-2 gap-3">{taskOptions.map((option) => <label key={option} className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={tasks.includes(option)} onChange={() => { toggleValue(option, tasks, setTasks); if (option === "Other" && tasks.includes("Other")) clearFieldError("otherTask"); }} className="rounded border-lime-300 text-lime-600 focus:ring-lime-500" />{option}</label>)}</div></div>
+                                        {tasks.includes("Other") && <div className="space-y-2"><Label>Other task *</Label><Input placeholder="Specify other task" value={otherTask} onChange={(e) => { setOtherTask(e.target.value); clearFieldError("otherTask"); }} className={getFieldClass("otherTask", "ui-field-worker")} />{renderFieldError("otherTask")}</div>}
                                         <div className="grid sm:grid-cols-2 gap-4">
                                             <div className="space-y-2"><Label>Have you worked on construction sites?</Label><Select value={workedOnSites} onValueChange={setWorkedOnSites}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem></SelectContent></Select></div>
                                             <div className="space-y-2"><Label>Experience in green/sustainable projects?</Label><Select value={greenProjectExperience} onValueChange={setGreenProjectExperience}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem></SelectContent></Select></div>
@@ -417,8 +527,8 @@ export default function WorkersPage() {
                                     <div className="rounded-xl border border-lime-100 p-4 space-y-4">
                                         <h3 className="font-semibold">8. Training Needs</h3>
                                         <div className="grid sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2"><Label>Do you want training?</Label><Select value={wantsTraining} onValueChange={setWantsTraining}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem></SelectContent></Select></div>
-                                            <div className="space-y-2"><Label>Preferred training type</Label><Select value={preferredTrainingType} onValueChange={setPreferredTrainingType}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{trainingTypeOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
+                                            <div className="space-y-2"><Label>Do you want training?</Label><Select value={wantsTraining} onValueChange={(value) => { setWantsTraining(value); if (value !== "Yes") clearFieldError("preferredTrainingType"); }}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem></SelectContent></Select></div>
+                                            <div className="space-y-2"><Label>Preferred training type {wantsTraining === "Yes" ? "*" : ""}</Label><Select value={preferredTrainingType} onValueChange={(value) => { setPreferredTrainingType(value); clearFieldError("preferredTrainingType"); }}><SelectTrigger className={getFieldClass("preferredTrainingType", "rounded-xl h-12 border-emerald-200/50")}><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{trainingTypeOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select>{renderFieldError("preferredTrainingType")}</div>
                                         </div>
                                     </div>
                                     <div className="rounded-xl border border-lime-100 p-4 space-y-4">
@@ -428,8 +538,9 @@ export default function WorkersPage() {
                                         <div className="space-y-2"><Label>Portfolio / photos of previous work</Label><Input placeholder="Paste portfolio/photos link" value={portfolioLink} onChange={(e) => setPortfolioLink(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
                                     </div>
                                     <div className="rounded-xl border border-lime-100 p-4 space-y-4">
-                                        <h3 className="font-semibold">10. Consent</h3>
-                                        <label className="flex items-start gap-3 text-sm text-muted-foreground"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 rounded border-lime-300 text-lime-600 focus:ring-lime-500" /><span>Agreement to share data for job opportunities and training.</span></label>
+                                        <h3 className="font-semibold">10. Consent *</h3>
+                                        <label className="flex items-start gap-3 text-sm text-muted-foreground"><input type="checkbox" checked={consent} onChange={(e) => { setConsent(e.target.checked); clearFieldError("consent"); }} className="mt-0.5 rounded border-lime-300 text-lime-600 focus:ring-lime-500" /><span>Agreement to share data for job opportunities and training.</span></label>
+                                        {renderFieldError("consent")}
                                     </div>
                                 </>
                             )}
@@ -464,7 +575,7 @@ export default function WorkersPage() {
                                     <ArrowLeft className="w-4 h-4 mr-2" />Back
                                 </Button>
                                 {formStep < 5 ? (
-                                    <Button type="button" className="w-full rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 text-white px-8 shadow-lg shadow-lime-500/20 sm:w-auto" onClick={() => setFormStep((s) => Math.min(5, s + 1))}>
+                                    <Button type="button" className="w-full rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 text-white px-8 shadow-lg shadow-lime-500/20 sm:w-auto" onClick={() => moveToStep(Math.min(5, formStep + 1))}>
                                         Next<ArrowRight className="w-4 h-4 ml-2" />
                                     </Button>
                                 ) : (

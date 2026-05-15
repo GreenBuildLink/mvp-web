@@ -33,6 +33,7 @@ import {
     Trash2,
 } from "lucide-react";
 import { PRODUCT_CATEGORIES } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const subscriptionPlans = [
     {
@@ -153,12 +154,46 @@ function toggleValue(value: string, items: string[], setItems: (next: string[]) 
     setItems(items.includes(value) ? items.filter((v) => v !== value) : [...items, value]);
 }
 
+function hasText(value: string) {
+    return value.trim().length > 0;
+}
+
+function isValidEmail(value: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function productHasAnyValue(product: ProductForm) {
+    return (
+        hasText(product.name) ||
+        hasText(product.category) ||
+        hasText(product.description) ||
+        hasText(product.keyFeatures) ||
+        hasText(product.scopeOfWorks) ||
+        product.certifications.length > 0 ||
+        hasText(product.otherCertification) ||
+        hasText(product.technicalDatasheet) ||
+        hasText(product.testReports) ||
+        product.useCases.length > 0 ||
+        hasText(product.exampleProjects) ||
+        hasText(product.clientsReferences) ||
+        product.availableMarkets.length > 0 ||
+        hasText(product.priceRange) ||
+        product.salesModels.length > 0 ||
+        hasText(product.productImages) ||
+        hasText(product.brochure) ||
+        hasText(product.videoDemo)
+    );
+}
+
+type FieldErrors = Record<string, string>;
+
 export default function CompanyProfilePage() {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [submitted, setSubmitted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
     const [companyName, setCompanyName] = useState("");
     const [companyEmail, setCompanyEmail] = useState("");
@@ -223,18 +258,122 @@ export default function CompanyProfilePage() {
             ? current.filter((item) => item !== value)
             : [...current, value];
         updateProduct(index, field, next);
+
+        if (field === "certifications" && value === "Other" && current.includes(value)) {
+            setFieldErrors((prev) => {
+                const nextErrors = { ...prev };
+                delete nextErrors[`product-${index}-otherCertification`];
+                return nextErrors;
+            });
+        }
+    };
+
+    const getStepErrors = (stepNumber: number) => {
+        if (stepNumber === 1) {
+            const errors: FieldErrors = {};
+
+            if (!hasText(companyName)) errors.companyName = "Company name is required.";
+            if (!hasText(companyEmail)) {
+                errors.companyEmail = "Email address is required.";
+            } else if (!isValidEmail(companyEmail)) {
+                errors.companyEmail = "Enter a valid email address.";
+            }
+            if (!hasText(companyPhone)) errors.companyPhone = "Phone number is required.";
+            if (!hasText(companyAddress)) errors.companyAddress = "Address is required.";
+            if (!hasText(companyCountry)) errors.companyCountry = "Country is required.";
+            if (!hasText(companyCity)) errors.companyCity = "City is required.";
+            if (companyLocation.length === 0) errors.companyLocation = "Location is required.";
+
+            return errors;
+        }
+
+        if (stepNumber === 2) {
+            const errors: FieldErrors = {};
+
+            products.forEach((product, index) => {
+                if (!productHasAnyValue(product)) {
+                    return;
+                }
+
+                if (!hasText(product.name)) errors[`product-${index}-name`] = "Product name is required.";
+                if (!hasText(product.category)) errors[`product-${index}-category`] = "Category is required.";
+                if (product.certifications.includes("Other") && !hasText(product.otherCertification)) {
+                    errors[`product-${index}-otherCertification`] = "Please specify the other certification.";
+                }
+            });
+
+            if (!publishConsent) {
+                errors.publishConsent = "You must agree to publish product information on the platform.";
+            }
+
+            return errors;
+        }
+
+        return {};
+    };
+
+    const moveToStep = (targetStep: number) => {
+        if (targetStep <= step) {
+            setFieldErrors({});
+            setError("");
+            setStep(targetStep);
+            return;
+        }
+
+        for (let stepNumber = 1; stepNumber < targetStep; stepNumber += 1) {
+            const stepErrors = getStepErrors(stepNumber);
+
+            if (Object.keys(stepErrors).length > 0) {
+                setFieldErrors(stepErrors);
+                setStep(stepNumber);
+                return;
+            }
+        }
+
+        setFieldErrors({});
+        setError("");
+        setStep(targetStep);
     };
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (!publishConsent) {
-            setError("Please agree to publish product information on the platform.");
-            return;
+        for (const stepNumber of [1, 2]) {
+            const stepErrors = getStepErrors(stepNumber);
+
+            if (Object.keys(stepErrors).length > 0) {
+                setFieldErrors(stepErrors);
+                setStep(stepNumber);
+                return;
+            }
         }
 
         setIsLoading(true);
+        setFieldErrors({});
         setError("");
         try {
+            const normalizedProducts = products
+                .filter(productHasAnyValue)
+                .map((product) => ({
+                    name: product.name,
+                    category: product.category,
+                    description: product.description,
+                    keyFeatures: product.keyFeatures,
+                    scopeOfWorks: product.scopeOfWorks,
+                    certName: product.certifications.join(", "),
+                    certOther: product.otherCertification,
+                    technicalDatasheet: product.technicalDatasheet,
+                    testReports: product.testReports,
+                    useCases: product.useCases,
+                    exampleProjects: product.exampleProjects,
+                    clientsReferences: product.clientsReferences,
+                    availableMarkets: product.availableMarkets,
+                    priceRange: product.priceRange,
+                    salesModels: product.salesModels,
+                    productImages: product.productImages,
+                    brochure: product.brochure,
+                    videoDemo: product.videoDemo,
+                }));
+
             const payload = {
                 type: "company",
                 companyName,
@@ -258,26 +397,7 @@ export default function CompanyProfilePage() {
                 collaborationInterests,
                 publishConsent,
                 selectedPlan: subscriptionPlans.find((p) => p.id === selectedPlan)?.name ?? selectedPlan,
-                products: products.map((product) => ({
-                    name: product.name,
-                    category: product.category,
-                    description: product.description,
-                    keyFeatures: product.keyFeatures,
-                    scopeOfWorks: product.scopeOfWorks,
-                    certName: product.certifications.join(", "),
-                    certOther: product.otherCertification,
-                    technicalDatasheet: product.technicalDatasheet,
-                    testReports: product.testReports,
-                    useCases: product.useCases,
-                    exampleProjects: product.exampleProjects,
-                    clientsReferences: product.clientsReferences,
-                    availableMarkets: product.availableMarkets,
-                    priceRange: product.priceRange,
-                    salesModels: product.salesModels,
-                    productImages: product.productImages,
-                    brochure: product.brochure,
-                    videoDemo: product.videoDemo,
-                })),
+                products: normalizedProducts,
             };
 
             const res = await fetch("/api/waitlist", {
@@ -294,6 +414,24 @@ export default function CompanyProfilePage() {
             setIsLoading(false);
         }
     };
+
+    const clearFieldError = (field: string) => {
+        setFieldErrors((prev) => {
+            if (!prev[field]) return prev;
+            const next = { ...prev };
+            delete next[field];
+            return next;
+        });
+    };
+
+    const getFieldClass = (field: string, defaultClassName: string) =>
+        cn(
+            defaultClassName,
+            fieldErrors[field] && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20",
+        );
+
+    const renderFieldError = (field: string) =>
+        fieldErrors[field] ? <p className="text-sm text-red-500">{fieldErrors[field]}</p> : null;
 
     if (submitted) {
         return (
@@ -338,7 +476,7 @@ export default function CompanyProfilePage() {
                     currentStep={step}
                     steps={companySteps.map((label) => ({ label }))}
                     className="mb-8"
-                    onStepSelect={setStep}
+                    onStepSelect={moveToStep}
                 />
 
                 <form onSubmit={handleSubmit}>
@@ -353,18 +491,19 @@ export default function CompanyProfilePage() {
                                     <div className="ui-form-section">
                                         <h3 className="font-semibold">1. Company Information</h3>
                                         <div className="grid sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2"><Label>Company Name *</Label><Input placeholder="Ex: GreenBuild Materials" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="ui-field" /></div>
-                                            <div className="space-y-2"><Label>Email Address *</Label><Input type="email" placeholder="Ex: contact@company.com" value={companyEmail} onChange={(e) => setCompanyEmail(e.target.value)} className="ui-field" /></div>
+                                            <div className="space-y-2"><Label>Company Name *</Label><Input placeholder="Ex: GreenBuild Materials" value={companyName} onChange={(e) => { setCompanyName(e.target.value); clearFieldError("companyName"); }} className={getFieldClass("companyName", "ui-field")} />{renderFieldError("companyName")}</div>
+                                            <div className="space-y-2"><Label>Email Address *</Label><Input type="email" placeholder="Ex: contact@company.com" value={companyEmail} onChange={(e) => { setCompanyEmail(e.target.value); clearFieldError("companyEmail"); clearFieldError("companyLocation"); }} className={getFieldClass("companyEmail", "ui-field")} />{renderFieldError("companyEmail")}</div>
                                         </div>
                                         <div className="grid sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2"><Label>Phone Number *</Label><Input placeholder="Ex: +216 12 345 678" value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} className="ui-field" /></div>
+                                            <div className="space-y-2"><Label>Phone Number *</Label><Input placeholder="Ex: +216 12 345 678" value={companyPhone} onChange={(e) => { setCompanyPhone(e.target.value); clearFieldError("companyPhone"); }} className={getFieldClass("companyPhone", "ui-field")} />{renderFieldError("companyPhone")}</div>
                                             <div className="space-y-2"><Label>Website</Label><Input placeholder="Ex: https://company.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="ui-field" /></div>
                                         </div>
                                         <div className="grid sm:grid-cols-3 gap-4">
-                                            <div className="space-y-2"><Label>Address *</Label><Input placeholder="Ex: 12 Green Avenue" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} className="ui-field" /></div>
-                                            <div className="space-y-2"><Label>Country *</Label><Input placeholder="Ex: Tunisia" value={companyCountry} onChange={(e) => setCompanyCountry(e.target.value)} className="ui-field" /></div>
-                                            <div className="space-y-2"><Label>City *</Label><Input placeholder="Ex: Tunis" value={companyCity} onChange={(e) => setCompanyCity(e.target.value)} className="ui-field" /></div>
+                                            <div className="space-y-2"><Label>Address *</Label><Input placeholder="Ex: 12 Green Avenue" value={companyAddress} onChange={(e) => { setCompanyAddress(e.target.value); clearFieldError("companyAddress"); clearFieldError("companyLocation"); }} className={getFieldClass("companyAddress", "ui-field")} />{renderFieldError("companyAddress")}</div>
+                                            <div className="space-y-2"><Label>Country *</Label><Input placeholder="Ex: Tunisia" value={companyCountry} onChange={(e) => { setCompanyCountry(e.target.value); clearFieldError("companyCountry"); clearFieldError("companyLocation"); }} className={getFieldClass("companyCountry", "ui-field")} />{renderFieldError("companyCountry")}</div>
+                                            <div className="space-y-2"><Label>City *</Label><Input placeholder="Ex: Tunis" value={companyCity} onChange={(e) => { setCompanyCity(e.target.value); clearFieldError("companyCity"); clearFieldError("companyLocation"); }} className={getFieldClass("companyCity", "ui-field")} />{renderFieldError("companyCity")}</div>
                                         </div>
+                                        {renderFieldError("companyLocation")}
                                         <div className="rounded-lg border border-emerald-100 p-3 space-y-3">
                                             <h4 className="font-medium">Social Media (if available)</h4>
                                             <div className="grid sm:grid-cols-2 gap-3">
@@ -428,8 +567,8 @@ export default function CompanyProfilePage() {
                                                 )}
                                             </div>
 
-                                            <div className="space-y-2"><Label>3. Product / Solution Name</Label><Input placeholder="Ex: EcoTherm Panel X" value={product.name} onChange={(e) => updateProduct(index, "name", e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                            <div className="space-y-2"><Label>Category</Label><Select value={product.category} onValueChange={(v) => updateProduct(index, "category", v)}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select category" /></SelectTrigger><SelectContent>{PRODUCT_CATEGORIES.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select></div>
+                                            <div className="space-y-2"><Label>3. Product / Solution Name</Label><Input placeholder="Ex: EcoTherm Panel X" value={product.name} onChange={(e) => { updateProduct(index, "name", e.target.value); clearFieldError(`product-${index}-name`); }} className={getFieldClass(`product-${index}-name`, "rounded-xl h-12 border-emerald-200/50")} />{renderFieldError(`product-${index}-name`)}</div>
+                                            <div className="space-y-2"><Label>Category</Label><Select value={product.category} onValueChange={(v) => { updateProduct(index, "category", v); clearFieldError(`product-${index}-category`); }}><SelectTrigger className={getFieldClass(`product-${index}-category`, "rounded-xl h-12 border-emerald-200/50")}><SelectValue placeholder="Select category" /></SelectTrigger><SelectContent>{PRODUCT_CATEGORIES.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select>{renderFieldError(`product-${index}-category`)}</div>
                                             <div className="space-y-2"><Label>Description (short but clear)</Label><Textarea placeholder="Briefly describe the product and its sustainability value." value={product.description} onChange={(e) => updateProduct(index, "description", e.target.value)} className="rounded-xl min-h-[100px] border-emerald-200/50" /></div>
                                             <div className="space-y-2"><Label>Key features / specifications</Label><Textarea placeholder="List technical specs: performance, materials, dimensions, etc." value={product.keyFeatures} onChange={(e) => updateProduct(index, "keyFeatures", e.target.value)} className="rounded-xl min-h-[100px] border-emerald-200/50" /></div>
                                             <div className="space-y-2"><Label>Scope of works (Designation of works)</Label><Textarea placeholder="Where this solution applies (facade, roofing, HVAC, etc.)." value={product.scopeOfWorks} onChange={(e) => updateProduct(index, "scopeOfWorks", e.target.value)} className="rounded-xl min-h-[100px] border-emerald-200/50" /></div>
@@ -437,7 +576,7 @@ export default function CompanyProfilePage() {
                                             <div className="rounded-lg border border-emerald-100 p-3 space-y-3">
                                                 <h4 className="font-medium flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-600" />4. Certifications & Compliance</h4>
                                                 <div className="grid sm:grid-cols-2 gap-3">{certificationOptions.map((option) => (<label key={option} className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={product.certifications.includes(option)} onChange={() => toggleProductMulti(index, "certifications", option)} className="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" />{option}</label>))}</div>
-                                                {product.certifications.includes("Other") && (<div className="space-y-2"><Label>Other certification</Label><Input placeholder="Ex: Local eco-label XYZ" value={product.otherCertification} onChange={(e) => updateProduct(index, "otherCertification", e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>)}
+                                                {product.certifications.includes("Other") && (<div className="space-y-2"><Label>Other certification</Label><Input placeholder="Ex: Local eco-label XYZ" value={product.otherCertification} onChange={(e) => { updateProduct(index, "otherCertification", e.target.value); clearFieldError(`product-${index}-otherCertification`); }} className={getFieldClass(`product-${index}-otherCertification`, "rounded-xl h-12 border-emerald-200/50")} />{renderFieldError(`product-${index}-otherCertification`)}</div>)}
                                                 <div className="space-y-2"><Label>Technical datasheets upload</Label><Input placeholder="Paste datasheet URL or file reference" value={product.technicalDatasheet} onChange={(e) => updateProduct(index, "technicalDatasheet", e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
                                                 <div className="space-y-2"><Label>Test reports (optional)</Label><Input placeholder="Paste test report URL or file reference" value={product.testReports} onChange={(e) => updateProduct(index, "testReports", e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
                                             </div>
@@ -480,8 +619,9 @@ export default function CompanyProfilePage() {
                                     </div>
 
                                     <div className="rounded-xl border border-emerald-100 p-4">
-                                        <h3 className="font-semibold mb-3">10. Consent</h3>
-                                        <label className="flex items-start gap-3 text-sm text-muted-foreground"><input type="checkbox" checked={publishConsent} onChange={(e) => setPublishConsent(e.target.checked)} className="mt-0.5 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" /><span>Agreement to publish product information on platform.</span></label>
+                                        <h3 className="font-semibold mb-3">10. Consent *</h3>
+                                        <label className="flex items-start gap-3 text-sm text-muted-foreground"><input type="checkbox" checked={publishConsent} onChange={(e) => { setPublishConsent(e.target.checked); clearFieldError("publishConsent"); }} className="mt-0.5 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" /><span>Agreement to publish product information on platform.</span></label>
+                                        {renderFieldError("publishConsent")}
                                     </div>
                                 </>
                             )}
@@ -514,7 +654,7 @@ export default function CompanyProfilePage() {
                             <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
                                 <Button type="button" variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={isLoading || step === 1}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button>
                                 {step < 3 ? (
-                                    <Button type="button" className="ui-btn-brand w-full px-8 sm:w-auto" onClick={() => setStep((s) => Math.min(3, s + 1))}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button>
+                                    <Button type="button" className="ui-btn-brand w-full px-8 sm:w-auto" onClick={() => moveToStep(Math.min(3, step + 1))}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button>
                                 ) : (
                                     <Button type="submit" className="ui-btn-brand w-full px-10 sm:w-auto" disabled={isLoading}>
                                         {isLoading ? (<><Loader2 className="w-5 h-5 mr-2 animate-spin" />Sending...</>) : (<><CheckCircle2 className="w-5 h-5 mr-2" />Submit</>)}

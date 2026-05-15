@@ -33,6 +33,7 @@ import {
     Star,
     Zap,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const expertiseFields = ["Architecture", "Engineering", "Construction", "Design", "Student", "Other"];
 const experienceOptions = ["0-1", "1-3", "3-5", "5+"];
@@ -89,6 +90,16 @@ const subscriptionPlans = [
     },
 ];
 
+function hasText(value: string) {
+    return value.trim().length > 0;
+}
+
+function isValidEmail(value: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+type FieldErrors = Record<string, string>;
+
 export default function NewProjectPage() {
     const router = useRouter();
     const [step, setStep] = useState(1);
@@ -129,19 +140,108 @@ export default function NewProjectPage() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
     const toggleArrayValue = (value: string, setter: Dispatch<SetStateAction<string[]>>) => {
         setter((prev) => (prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]));
     };
 
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (!consent) {
-            setError("Please agree to data usage for placement and communication.");
+    const getStepErrors = (stepNumber: number) => {
+        if (stepNumber === 1) {
+            const errors: FieldErrors = {};
+
+            if (!hasText(fullName)) errors.fullName = "Full name is required.";
+            if (!hasText(email)) {
+                errors.email = "Email address is required.";
+            } else if (!isValidEmail(email)) {
+                errors.email = "Enter a valid email address.";
+            }
+            if (!hasText(phone)) errors.phone = "Phone number is required.";
+            if (!hasText(country)) errors.country = "Country is required.";
+            if (!hasText(city)) errors.city = "City is required.";
+            if (!hasText(jobTitle)) errors.jobTitle = "Current position / job title is required.";
+
+            return errors;
+        }
+
+        if (stepNumber === 2) {
+            const errors: FieldErrors = {};
+
+            if (!hasText(expertiseField)) errors.expertiseField = "Field of expertise is required.";
+            if (!hasText(yearsExperience)) errors.yearsExperience = "Years of experience is required.";
+            if (!hasText(educationLevel)) errors.educationLevel = "Highest level of education is required.";
+            if (!hasText(sustainableDesignLevel)) errors.sustainableDesignLevel = "Your level in sustainable design is required.";
+            if (certifications.includes("Other") && !hasText(otherCertification)) {
+                errors.otherCertification = "Please specify the other certification.";
+            }
+            if (keySkills.includes("Other") && !hasText(otherKeySkill)) {
+                errors.otherKeySkill = "Please specify the other key skill.";
+            }
+
+            return errors;
+        }
+
+        if (stepNumber === 3) {
+            const errors: FieldErrors = {};
+
+            if (!hasText(greenProjectsWorked)) errors.greenProjectsWorked = "Please select whether you worked on sustainable projects.";
+            if (!hasText(knowledgeLevel)) errors.knowledgeLevel = "Knowledge in sustainable construction is required.";
+            if (!hasText(joinReason)) errors.joinReason = "Please share why you want to join Green Designers Hub.";
+            if (!hasText(learningFormat)) errors.learningFormat = "Preferred learning format is required.";
+
+            return errors;
+        }
+
+        if (stepNumber === 4) {
+            const errors: FieldErrors = {};
+
+            if (!hasText(availabilityPerWeek)) errors.availabilityPerWeek = "Availability per week is required.";
+            if (!hasText(preferredSchedule)) errors.preferredSchedule = "Preferred schedule is required.";
+            if (!consent) errors.consent = "You must agree to the use of your data for program placement and communication.";
+
+            return errors;
+        }
+
+        return {};
+    };
+
+    const moveToStep = (targetStep: number) => {
+        if (targetStep <= step) {
+            setFieldErrors({});
+            setError("");
+            setStep(targetStep);
             return;
         }
 
+        for (let stepNumber = 1; stepNumber < targetStep; stepNumber += 1) {
+            const stepErrors = getStepErrors(stepNumber);
+
+            if (Object.keys(stepErrors).length > 0) {
+                setFieldErrors(stepErrors);
+                setStep(stepNumber);
+                return;
+            }
+        }
+
+        setFieldErrors({});
+        setError("");
+        setStep(targetStep);
+    };
+
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        for (const stepNumber of [1, 2, 3, 4]) {
+            const stepErrors = getStepErrors(stepNumber);
+
+            if (Object.keys(stepErrors).length > 0) {
+                setFieldErrors(stepErrors);
+                setStep(stepNumber);
+                return;
+            }
+        }
+
         setIsLoading(true);
+        setFieldErrors({});
         setError("");
         try {
             const res = await fetch("/api/waitlist", {
@@ -187,6 +287,24 @@ export default function NewProjectPage() {
             setIsLoading(false);
         }
     };
+
+    const clearFieldError = (field: string) => {
+        setFieldErrors((prev) => {
+            if (!prev[field]) return prev;
+            const next = { ...prev };
+            delete next[field];
+            return next;
+        });
+    };
+
+    const getFieldClass = (field: string, defaultClassName: string) =>
+        cn(
+            defaultClassName,
+            fieldErrors[field] && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20",
+        );
+
+    const renderFieldError = (field: string) =>
+        fieldErrors[field] ? <p className="text-sm text-red-500">{fieldErrors[field]}</p> : null;
 
     if (submitted) {
         return (
@@ -254,7 +372,7 @@ export default function NewProjectPage() {
                     currentStep={step}
                     steps={designerSteps.map(({ label, icon }) => ({ label, icon }))}
                     className="mb-10"
-                    onStepSelect={setStep}
+                    onStepSelect={moveToStep}
                 />
 
                 <div className="hidden">
@@ -291,18 +409,19 @@ export default function NewProjectPage() {
                         <CardContent className="space-y-5 pt-4">
                             <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
                                 <h3 className="font-semibold">1. Personal Information</h3>
-                                <div className="space-y-2"><Label>Full name *</Label><Input placeholder="Your full name" value={fullName} onChange={(e) => setFullName(e.target.value)} className="ui-field" /></div>
+                                <div className="space-y-2"><Label>Full name *</Label><Input placeholder="Your full name" value={fullName} onChange={(e) => { setFullName(e.target.value); clearFieldError("fullName"); }} className={getFieldClass("fullName", "ui-field")} />{renderFieldError("fullName")}</div>
                                 <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="space-y-2"><Label>Email address *</Label><Input type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="ui-field" /></div>
-                                    <div className="space-y-2"><Label>Phone number *</Label><Input placeholder="+216 ..." value={phone} onChange={(e) => setPhone(e.target.value)} className="ui-field" /></div>
+                                    <div className="space-y-2"><Label>Email address *</Label><Input type="email" placeholder="your@email.com" value={email} onChange={(e) => { setEmail(e.target.value); clearFieldError("email"); }} className={getFieldClass("email", "ui-field")} />{renderFieldError("email")}</div>
+                                    <div className="space-y-2"><Label>Phone number *</Label><Input placeholder="+216 ..." value={phone} onChange={(e) => { setPhone(e.target.value); clearFieldError("phone"); }} className={getFieldClass("phone", "ui-field")} />{renderFieldError("phone")}</div>
                                 </div>
                                 <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="space-y-2"><Label>Country *</Label><Input placeholder="Ex: Tunisia" value={country} onChange={(e) => setCountry(e.target.value)} className="ui-field" /></div>
-                                    <div className="space-y-2"><Label>City *</Label><Input placeholder="Ex: Tunis" value={city} onChange={(e) => setCity(e.target.value)} className="ui-field" /></div>
+                                    <div className="space-y-2"><Label>Country *</Label><Input placeholder="Ex: Tunisia" value={country} onChange={(e) => { setCountry(e.target.value); clearFieldError("country"); }} className={getFieldClass("country", "ui-field")} />{renderFieldError("country")}</div>
+                                    <div className="space-y-2"><Label>City *</Label><Input placeholder="Ex: Tunis" value={city} onChange={(e) => { setCity(e.target.value); clearFieldError("city"); }} className={getFieldClass("city", "ui-field")} />{renderFieldError("city")}</div>
                                 </div>
-                                <div className="space-y-2"><Label>Current position / job title *</Label><Input placeholder="Ex: Junior Architect" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className="ui-field" /></div>
+                                <div className="space-y-2"><Label>Current position / job title *</Label><Input placeholder="Ex: Junior Architect" value={jobTitle} onChange={(e) => { setJobTitle(e.target.value); clearFieldError("jobTitle"); }} className={getFieldClass("jobTitle", "ui-field")} />{renderFieldError("jobTitle")}</div>
                             </div>
-                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end"><Button className="ui-btn-brand w-full px-8 sm:w-auto" onClick={() => setStep(2)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
+                            {error ? <p className="text-center text-sm text-red-500">{error}</p> : null}
+                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end"><Button className="ui-btn-brand w-full px-8 sm:w-auto" onClick={() => moveToStep(2)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
                         </CardContent>
                     </Card>
                 )}
@@ -314,21 +433,21 @@ export default function NewProjectPage() {
                             <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
                                 <h3 className="font-semibold">2. Professional Background</h3>
                                 <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="space-y-2"><Label>Field of expertise *</Label><Select value={expertiseField} onValueChange={setExpertiseField}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select field" /></SelectTrigger><SelectContent>{expertiseFields.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select></div>
-                                    <div className="space-y-2"><Label>Years of experience *</Label><Select value={yearsExperience} onValueChange={setYearsExperience}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select range" /></SelectTrigger><SelectContent>{experienceOptions.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select></div>
+                                    <div className="space-y-2"><Label>Field of expertise *</Label><Select value={expertiseField} onValueChange={(value) => { setExpertiseField(value); clearFieldError("expertiseField"); }}><SelectTrigger className={getFieldClass("expertiseField", "rounded-xl h-12 border-emerald-200/50")}><SelectValue placeholder="Select field" /></SelectTrigger><SelectContent>{expertiseFields.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select>{renderFieldError("expertiseField")}</div>
+                                    <div className="space-y-2"><Label>Years of experience *</Label><Select value={yearsExperience} onValueChange={(value) => { setYearsExperience(value); clearFieldError("yearsExperience"); }}><SelectTrigger className={getFieldClass("yearsExperience", "rounded-xl h-12 border-emerald-200/50")}><SelectValue placeholder="Select range" /></SelectTrigger><SelectContent>{experienceOptions.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select>{renderFieldError("yearsExperience")}</div>
                                 </div>
                                 <div className="space-y-2"><Label>Current organization / company</Label><Input placeholder="Optional" value={organization} onChange={(e) => setOrganization(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
                             </div>
                             <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
                                 <h3 className="font-semibold">3. Education & Certifications</h3>
                                 <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="space-y-2"><Label>Highest level of education *</Label><Select value={educationLevel} onValueChange={setEducationLevel}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select level" /></SelectTrigger><SelectContent>{educationLevels.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select></div>
-                                    <div className="space-y-2"><Label>Your level in sustainable design *</Label><Select value={sustainableDesignLevel} onValueChange={setSustainableDesignLevel}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select level" /></SelectTrigger><SelectContent>{sustainableDesignLevels.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select></div>
+                                    <div className="space-y-2"><Label>Highest level of education *</Label><Select value={educationLevel} onValueChange={(value) => { setEducationLevel(value); clearFieldError("educationLevel"); }}><SelectTrigger className={getFieldClass("educationLevel", "rounded-xl h-12 border-emerald-200/50")}><SelectValue placeholder="Select level" /></SelectTrigger><SelectContent>{educationLevels.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select>{renderFieldError("educationLevel")}</div>
+                                    <div className="space-y-2"><Label>Your level in sustainable design *</Label><Select value={sustainableDesignLevel} onValueChange={(value) => { setSustainableDesignLevel(value); clearFieldError("sustainableDesignLevel"); }}><SelectTrigger className={getFieldClass("sustainableDesignLevel", "rounded-xl h-12 border-emerald-200/50")}><SelectValue placeholder="Select level" /></SelectTrigger><SelectContent>{sustainableDesignLevels.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select>{renderFieldError("sustainableDesignLevel")}</div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Relevant certifications</Label>
-                                    <div className="grid sm:grid-cols-2 gap-3">{certificationOptions.map((option) => (<label key={option} className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={certifications.includes(option)} onChange={() => toggleArrayValue(option, setCertifications)} className="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" />{option}</label>))}</div>
-                                    {certifications.includes("Other") && (<Input placeholder="Specify other certification" value={otherCertification} onChange={(e) => setOtherCertification(e.target.value)} className="rounded-xl h-12 border-emerald-200/50 mt-3" />)}
+                                    <div className="grid sm:grid-cols-2 gap-3">{certificationOptions.map((option) => (<label key={option} className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={certifications.includes(option)} onChange={() => { toggleArrayValue(option, setCertifications); if (option === "Other" && certifications.includes("Other")) clearFieldError("otherCertification"); }} className="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" />{option}</label>))}</div>
+                                    {certifications.includes("Other") && (<><Input placeholder="Specify other certification" value={otherCertification} onChange={(e) => { setOtherCertification(e.target.value); clearFieldError("otherCertification"); }} className={getFieldClass("otherCertification", "rounded-xl h-12 border-emerald-200/50 mt-3")} />{renderFieldError("otherCertification")}</>)}
                                 </div>
                             </div>
                             <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
@@ -336,11 +455,12 @@ export default function NewProjectPage() {
                                 <div className="space-y-2"><Label>Which tools do you use?</Label><Textarea placeholder="AutoCAD, Revit, SketchUp, Power BI, etc." value={tools} onChange={(e) => setTools(e.target.value)} className="rounded-xl min-h-[90px] border-emerald-200/50" /></div>
                                 <div className="space-y-2">
                                     <Label>Key skills</Label>
-                                    <div className="grid sm:grid-cols-2 gap-3">{keySkillOptions.map((option) => (<label key={option} className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={keySkills.includes(option)} onChange={() => toggleArrayValue(option, setKeySkills)} className="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" />{option}</label>))}</div>
-                                    {keySkills.includes("Other") && (<Input placeholder="Specify other key skill" value={otherKeySkill} onChange={(e) => setOtherKeySkill(e.target.value)} className="rounded-xl h-12 border-emerald-200/50 mt-3" />)}
+                                    <div className="grid sm:grid-cols-2 gap-3">{keySkillOptions.map((option) => (<label key={option} className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={keySkills.includes(option)} onChange={() => { toggleArrayValue(option, setKeySkills); if (option === "Other" && keySkills.includes("Other")) clearFieldError("otherKeySkill"); }} className="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" />{option}</label>))}</div>
+                                    {keySkills.includes("Other") && (<><Input placeholder="Specify other key skill" value={otherKeySkill} onChange={(e) => { setOtherKeySkill(e.target.value); clearFieldError("otherKeySkill"); }} className={getFieldClass("otherKeySkill", "rounded-xl h-12 border-emerald-200/50 mt-3")} />{renderFieldError("otherKeySkill")}</>)}
                                 </div>
                             </div>
-                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-between"><Button variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep(1)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button><Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-8 text-white sm:w-auto" onClick={() => setStep(3)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
+                            {error ? <p className="text-center text-sm text-red-500">{error}</p> : null}
+                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-between"><Button variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep(1)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button><Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-8 text-white sm:w-auto" onClick={() => moveToStep(3)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
                         </CardContent>
                     </Card>
                 )}
@@ -351,18 +471,19 @@ export default function NewProjectPage() {
                         <CardContent className="space-y-6 pt-4">
                             <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
                                 <h3 className="font-semibold">5. Experience in Green Projects</h3>
-                                <div className="space-y-2"><Label>Have you worked on sustainable projects? *</Label><div className="flex items-center gap-6"><label className="flex items-center gap-2 text-sm text-muted-foreground"><input type="radio" name="greenProjectsWorked" checked={greenProjectsWorked === "Yes"} onChange={() => setGreenProjectsWorked("Yes")} />Yes</label><label className="flex items-center gap-2 text-sm text-muted-foreground"><input type="radio" name="greenProjectsWorked" checked={greenProjectsWorked === "No"} onChange={() => setGreenProjectsWorked("No")} />No</label></div></div>
+                                <div className="space-y-2"><Label>Have you worked on sustainable projects? *</Label><div className="flex items-center gap-6"><label className="flex items-center gap-2 text-sm text-muted-foreground"><input type="radio" name="greenProjectsWorked" checked={greenProjectsWorked === "Yes"} onChange={() => { setGreenProjectsWorked("Yes"); clearFieldError("greenProjectsWorked"); }} />Yes</label><label className="flex items-center gap-2 text-sm text-muted-foreground"><input type="radio" name="greenProjectsWorked" checked={greenProjectsWorked === "No"} onChange={() => { setGreenProjectsWorked("No"); clearFieldError("greenProjectsWorked"); }} />No</label></div>{renderFieldError("greenProjectsWorked")}</div>
                                 {greenProjectsWorked === "Yes" && <div className="space-y-2"><Label>If yes, describe briefly</Label><Textarea placeholder="Short description" value={greenProjectDescription} onChange={(e) => setGreenProjectDescription(e.target.value)} className="rounded-xl min-h-[90px] border-emerald-200/50" /></div>}
                                 <div className="space-y-2"><Label>Type of projects</Label><Input placeholder="Residential, Commercial, Public..." value={projectTypes} onChange={(e) => setProjectTypes(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                <div className="space-y-2"><Label>Knowledge in sustainable construction *</Label><Select value={knowledgeLevel} onValueChange={setKnowledgeLevel}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select level" /></SelectTrigger><SelectContent>{knowledgeOptions.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select></div>
+                                <div className="space-y-2"><Label>Knowledge in sustainable construction *</Label><Select value={knowledgeLevel} onValueChange={(value) => { setKnowledgeLevel(value); clearFieldError("knowledgeLevel"); }}><SelectTrigger className={getFieldClass("knowledgeLevel", "rounded-xl h-12 border-emerald-200/50")}><SelectValue placeholder="Select level" /></SelectTrigger><SelectContent>{knowledgeOptions.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select>{renderFieldError("knowledgeLevel")}</div>
                             </div>
                             <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
                                 <h3 className="font-semibold">6. Goals & Expectations</h3>
-                                <div className="space-y-2"><Label>Why do you want to join Green Designers Hub? *</Label><Textarea placeholder="Share your motivation" value={joinReason} onChange={(e) => setJoinReason(e.target.value)} className="rounded-xl min-h-[100px] border-emerald-200/50" /></div>
+                                <div className="space-y-2"><Label>Why do you want to join Green Designers Hub? *</Label><Textarea placeholder="Share your motivation" value={joinReason} onChange={(e) => { setJoinReason(e.target.value); clearFieldError("joinReason"); }} className={getFieldClass("joinReason", "rounded-xl min-h-[100px] border-emerald-200/50")} />{renderFieldError("joinReason")}</div>
                                 <div className="space-y-2"><Label>Main objectives</Label><div className="grid sm:grid-cols-2 gap-3">{objectiveOptions.map((option) => (<label key={option} className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={objectives.includes(option)} onChange={() => toggleArrayValue(option, setObjectives)} className="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" />{option}</label>))}</div></div>
-                                <div className="space-y-2"><Label>Preferred learning format *</Label><Select value={learningFormat} onValueChange={setLearningFormat}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select format" /></SelectTrigger><SelectContent>{learningFormats.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select></div>
+                                <div className="space-y-2"><Label>Preferred learning format *</Label><Select value={learningFormat} onValueChange={(value) => { setLearningFormat(value); clearFieldError("learningFormat"); }}><SelectTrigger className={getFieldClass("learningFormat", "rounded-xl h-12 border-emerald-200/50")}><SelectValue placeholder="Select format" /></SelectTrigger><SelectContent>{learningFormats.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent></Select>{renderFieldError("learningFormat")}</div>
                             </div>
-                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-between"><Button variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep(2)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button><Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-8 text-white sm:w-auto" onClick={() => setStep(4)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
+                            {error ? <p className="text-center text-sm text-red-500">{error}</p> : null}
+                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-between"><Button variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep(2)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button><Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-8 text-white sm:w-auto" onClick={() => moveToStep(4)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
                         </CardContent>
                     </Card>
                 )}
@@ -374,8 +495,8 @@ export default function NewProjectPage() {
                             <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
                                 <h3 className="font-semibold">7. Availability & Commitment</h3>
                                 <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="space-y-2"><Label>Availability per week *</Label><Input placeholder="Ex: 6 hours/week" value={availabilityPerWeek} onChange={(e) => setAvailabilityPerWeek(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                    <div className="space-y-2"><Label>Preferred schedule *</Label><Input placeholder="Ex: Weekday evenings" value={preferredSchedule} onChange={(e) => setPreferredSchedule(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
+                                    <div className="space-y-2"><Label>Availability per week *</Label><Input placeholder="Ex: 6 hours/week" value={availabilityPerWeek} onChange={(e) => { setAvailabilityPerWeek(e.target.value); clearFieldError("availabilityPerWeek"); }} className={getFieldClass("availabilityPerWeek", "rounded-xl h-12 border-emerald-200/50")} />{renderFieldError("availabilityPerWeek")}</div>
+                                    <div className="space-y-2"><Label>Preferred schedule *</Label><Input placeholder="Ex: Weekday evenings" value={preferredSchedule} onChange={(e) => { setPreferredSchedule(e.target.value); clearFieldError("preferredSchedule"); }} className={getFieldClass("preferredSchedule", "rounded-xl h-12 border-emerald-200/50")} />{renderFieldError("preferredSchedule")}</div>
                                 </div>
                             </div>
                             <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
@@ -383,10 +504,12 @@ export default function NewProjectPage() {
                                 <div className="space-y-2"><Label>Portfolio / LinkedIn / social link</Label><Input placeholder="https://..." value={portfolioLink} onChange={(e) => setPortfolioLink(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
                             </div>
                             <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
-                                <h3 className="font-semibold">9. Consent</h3>
-                                <label className="flex items-start gap-3 text-sm text-muted-foreground"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" /><span>I agree to the use of my data for program placement and communication.</span></label>
+                                <h3 className="font-semibold">9. Consent *</h3>
+                                <label className="flex items-start gap-3 text-sm text-muted-foreground"><input type="checkbox" checked={consent} onChange={(e) => { setConsent(e.target.checked); clearFieldError("consent"); }} className="mt-0.5 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" /><span>I agree to the use of my data for program placement and communication.</span></label>
+                                {renderFieldError("consent")}
                             </div>
-                            <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between"><Button variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep(3)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button><Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-8 text-white sm:w-auto" onClick={() => setStep(5)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
+                            {error ? <p className="text-center text-sm text-red-500">{error}</p> : null}
+                            <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between"><Button variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep(3)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button><Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-8 text-white sm:w-auto" onClick={() => moveToStep(5)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
                         </CardContent>
                     </Card>
                 )}

@@ -34,12 +34,12 @@ export type CompanySubmission = {
     id: string;
     company_name: string;
     company_description: string;
-    company_address: string | null;
-    company_city: string | null;
-    company_country: string | null;
-    company_location: string | null;
-    company_email: string | null;
-    company_phone: string | null;
+    company_address: string;
+    company_city: string;
+    company_country: string;
+    company_location: string;
+    company_email: string;
+    company_phone: string;
     company_website: string | null;
     social_media_links: Record<string, string>;
     linkedin_url: string | null;
@@ -61,7 +61,7 @@ export type WorkerSubmission = {
     id: string;
     name: string;
     email: string;
-    phone: string | null;
+    phone: string;
     location: string;
     age: string | null;
     occupation: string | null;
@@ -101,7 +101,7 @@ export type ConsultationSubmission = {
     position: string;
     project_country: string;
     project_city: string;
-    climate_zone: string | null;
+    climate_zone: string;
     project_type: string;
     project_stage: string;
     land_area: string;
