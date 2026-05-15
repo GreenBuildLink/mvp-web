@@ -1,73 +1,35 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+    ArrowRight,
+    BriefcaseBusiness,
+    CheckCircle2,
+    GraduationCap,
+    HardHat,
+    MapPin,
+    ShieldCheck,
+    Users,
+    Wrench,
+} from "lucide-react";
+
+import { WorkerQualifiedDashboard } from "@/components/worker/dashboards/worker-qualified-dashboard";
+import { WorkerVerifiedDashboard } from "@/components/worker/dashboards/worker-verified-dashboard";
+import { WorkerRegistrationStepContent } from "@/components/worker/registration/worker-registration-step-content";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { PageIntro } from "@/components/ui/page-intro";
 import { StepProgress } from "@/components/ui/step-progress";
-import { Textarea } from "@/components/ui/textarea";
+import { useCompletionScore } from "@/hooks/use-completion-score";
+import { useFormFieldErrors } from "@/hooks/use-form-field-errors";
+import { usePlanSelection } from "@/hooks/use-plan-selection";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
-    HardHat,
-    ArrowRight,
-    ArrowLeft,
-    CheckCircle2,
-    Send,
-    Loader2,
-    Star,
-    Zap,
-    Sparkles,
-    ShieldCheck,
-    Wrench,
-    GraduationCap,
-    BriefcaseBusiness,
-    Users,
-    MapPin,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-
-const workerOccupations = ["Worker", "Technician", "Installer", "Supervisor", "Student", "Unemployed"];
-const workerTrades = ["Masonry", "Electrical", "Plumbing", "HVAC", "Solar installation", "Insulation works", "Other"];
-const workerExperienceOptions = ["0-1", "1-3", "3-5", "5+"];
-const taskOptions = ["Reading plans", "Equipment installation", "Maintenance", "Site execution", "Safety procedures", "Other"];
-const tradeLevelOptions = ["Beginner", "Intermediate", "Skilled worker", "Supervisor"];
-const workTypeOptions = ["Full-time", "Part-time", "Freelance / Missions"];
-const mobilityOptions = ["Local only", "National"];
-const greenAreas = ["Solar energy", "Energy efficiency", "Green materials", "Smart buildings"];
-const trainingTypeOptions = ["Practical (on-site)", "Short courses", "Certification programs"];
-const workerSteps = ["Personal", "Profile", "Skills", "Training", "Subscription"];
-
-const workerSubscriptionPlans = [
-    {
-        id: "qualified",
-        name: "GB Qualified Link",
-        price: "EUR 0",
-        icon: Star,
-        color: "from-gray-400 to-gray-500",
-        borderColor: "border-gray-200",
-        features: ["Basic worker profile", "Directory visibility", "Community updates"],
-    },
-    {
-        id: "verified",
-        name: "GB Verified Link",
-        price: "EUR 19/month",
-        icon: Zap,
-        color: "from-lime-500 to-emerald-600",
-        borderColor: "border-lime-300",
-        popular: true,
-        features: ["Priority project matching", "Highlighted profile", "Training priority"],
-    },
-];
+    workerSteps,
+    workerSubscriptionPlans,
+} from "@/lib/worker-registration";
+import { findFirstStepValidationError } from "@/lib/registration/step-validation";
 
 function toggleValue(value: string, items: string[], setItems: (next: string[]) => void) {
     setItems(items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
@@ -90,7 +52,7 @@ export default function WorkersPage() {
     const [submitted, setSubmitted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+    const { fieldErrors, setFieldErrors, clearFieldError, getFieldClass } = useFormFieldErrors();
 
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
@@ -120,12 +82,61 @@ export default function WorkersPage() {
     const [workerCertificatesLink, setWorkerCertificatesLink] = useState("");
     const [portfolioLink, setPortfolioLink] = useState("");
     const [consent, setConsent] = useState(false);
-    const [selectedPlan, setSelectedPlan] = useState("verified");
+    const { selectedPlan, setSelectedPlan, selectedPlanConfig } = usePlanSelection(workerSubscriptionPlans);
+
+    const workerReadinessCompleted = useMemo(() => {
+        const checkpoints = [
+            name,
+            phone,
+            email,
+            location,
+            trade,
+            yearsExperience,
+            tradeLevel,
+            currentlyAvailable,
+            workType,
+            mobility,
+            interestedInGreen,
+            wantsTraining,
+        ];
+
+        let completed = checkpoints.filter(hasText).length;
+        if (tasks.length > 0) completed += 1;
+        if (greenInterestAreas.length > 0) completed += 1;
+        if (hasText(workerCertifications)) completed += 1;
+        if (hasText(technicalTraining)) completed += 1;
+        if (hasText(cvLink)) completed += 1;
+        if (consent) completed += 1;
+        return completed;
+    }, [
+        consent,
+        currentlyAvailable,
+        cvLink,
+        email,
+        greenInterestAreas.length,
+        interestedInGreen,
+        location,
+        mobility,
+        name,
+        phone,
+        tasks.length,
+        technicalTraining,
+        trade,
+        tradeLevel,
+        wantsTraining,
+        workType,
+        workerCertifications,
+        yearsExperience,
+    ]);
+
+    const workerReadiness = useCompletionScore({
+        completed: workerReadinessCompleted,
+        total: 18,
+    });
 
     const getStepErrors = (stepNumber: number) => {
         if (stepNumber === 1) {
             const errors: FieldErrors = {};
-
             if (!hasText(name)) errors.name = "Full name is required.";
             if (!hasText(phone)) errors.phone = "Phone number is required.";
             if (!hasText(email)) {
@@ -134,38 +145,38 @@ export default function WorkersPage() {
                 errors.email = "Enter a valid email address.";
             }
             if (!hasText(location)) errors.location = "City / Region is required.";
-
             return errors;
         }
 
         if (stepNumber === 2) {
             const errors: FieldErrors = {};
-
             if (!hasText(trade)) errors.trade = "Trade is required.";
             if (trade === "Other" && !hasText(otherTrade)) errors.otherTrade = "Please specify your trade.";
-
             return errors;
         }
 
         if (stepNumber === 3) {
             const errors: FieldErrors = {};
-
             if (tasks.includes("Other") && !hasText(otherTask)) errors.otherTask = "Please specify the other task.";
-
             return errors;
         }
 
         if (stepNumber === 4) {
             const errors: FieldErrors = {};
-
             if (wantsTraining === "Yes" && !hasText(preferredTrainingType)) {
                 errors.preferredTrainingType = "Preferred training type is required.";
             }
-
             if (!consent) {
                 errors.consent = "You must agree to share data for job opportunities and training.";
             }
+            return errors;
+        }
 
+        if (stepNumber === 5) {
+            const errors: FieldErrors = {};
+            if (!selectedPlanConfig) {
+                errors.selectedPlan = "Please choose a plan before submitting.";
+            }
             return errors;
         }
 
@@ -180,14 +191,15 @@ export default function WorkersPage() {
             return;
         }
 
-        for (let stepNumber = 1; stepNumber < targetStep; stepNumber += 1) {
-            const stepErrors = getStepErrors(stepNumber);
+        const validation = findFirstStepValidationError(
+            Array.from({ length: targetStep - 1 }, (_, index) => index + 1),
+            getStepErrors,
+        );
 
-            if (Object.keys(stepErrors).length > 0) {
-                setFieldErrors(stepErrors);
-                setFormStep(stepNumber);
-                return;
-            }
+        if (validation) {
+            setFieldErrors(validation.errors);
+            setFormStep(validation.step);
+            return;
         }
 
         setFieldErrors({});
@@ -197,21 +209,20 @@ export default function WorkersPage() {
 
     const handleWorkerSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        for (const stepNumber of [1, 2, 3, 4]) {
-            const stepErrors = getStepErrors(stepNumber);
+        const validation = findFirstStepValidationError([1, 2, 3, 4, 5], getStepErrors);
 
-            if (Object.keys(stepErrors).length > 0) {
-                setFieldErrors(stepErrors);
-                setFormStep(stepNumber);
-                return;
-            }
+        if (validation) {
+            setFieldErrors(validation.errors);
+            setFormStep(validation.step);
+            return;
         }
 
         setIsLoading(true);
         setFieldErrors({});
         setError("");
+
         try {
-            const res = await fetch("/api/waitlist", {
+            const response = await fetch("/api/waitlist", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -244,10 +255,11 @@ export default function WorkersPage() {
                     workerCertificatesLink,
                     portfolioLink,
                     consent,
-                    selectedPlan: workerSubscriptionPlans.find((p) => p.id === selectedPlan)?.name ?? selectedPlan,
+                    selectedPlan: selectedPlanConfig?.name ?? selectedPlan,
                 }),
             });
-            if (!res.ok) throw new Error();
+
+            if (!response.ok) throw new Error();
             setSubmitted(true);
         } catch {
             setError("Something went wrong. Please try again.");
@@ -256,23 +268,18 @@ export default function WorkersPage() {
         }
     };
 
-    const clearFieldError = (field: string) => {
-        setFieldErrors((prev) => {
-            if (!prev[field]) return prev;
-            const next = { ...prev };
-            delete next[field];
-            return next;
-        });
-    };
-
-    const getFieldClass = (field: string, defaultClassName: string) =>
-        cn(
-            defaultClassName,
-            fieldErrors[field] && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20",
-        );
-
     const renderFieldError = (field: string) =>
         fieldErrors[field] ? <p className="text-sm text-red-500">{fieldErrors[field]}</p> : null;
+
+    const done = () => {
+        setSubmitted(false);
+        setShowForm(false);
+    };
+    const resetForm = () => {
+        setSubmitted(false);
+        setShowForm(false);
+        setFormStep(1);
+    };
 
     if (!showForm) {
         return (
@@ -406,28 +413,38 @@ export default function WorkersPage() {
     }
 
     if (submitted) {
-        return (
-            <div className="ui-page-shell-centered">
-                <Card className="max-w-md w-full border-0 shadow-2xl animate-scale-in">
-                    <CardContent className="p-10 text-center">
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-lime-500 to-emerald-600 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-lime-500/30">
-                            <CheckCircle2 className="w-10 h-10 text-white" />
-                        </div>
-                        <h2 className="text-2xl font-bold mb-3">Registration submitted!</h2>
-                        <p className="text-muted-foreground mb-2">Your worker profile has been submitted successfully.</p>
-                        <p className="text-sm font-medium text-lime-600 dark:text-lime-400 mb-6">Plan: {workerSubscriptionPlans.find((p) => p.id === selectedPlan)?.name}</p>
-                        <div className="space-y-3">
-                            <Button className="ui-btn-worker w-full" onClick={() => router.push("/")}>
-                                Go to Home
-                            </Button>
-                            <Button variant="outline" className="w-full rounded-full" onClick={() => { setSubmitted(false); setShowForm(false); setFormStep(1); }}>
-                                Submit Another
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        );
+        if (selectedPlan === "qualified") {
+            return (
+                <WorkerQualifiedDashboard
+                    name={name}
+                    trade={trade}
+                    workerReadiness={workerReadiness}
+                    yearsExperience={yearsExperience}
+                    location={location}
+                    currentlyAvailable={currentlyAvailable}
+                    tasksCount={tasks.length}
+                    selectedPlanName={selectedPlanConfig?.name}
+                    selectedPlanPrice={selectedPlanConfig?.price}
+                    onGoHome={() => router.push("/")}
+                    onDone={done}
+                    onReset={resetForm}
+                />
+            );
+        }
+
+        if (selectedPlan === "verified") {
+            return (
+                <WorkerVerifiedDashboard
+                    name={name}
+                    workerReadiness={workerReadiness}
+                    selectedPlanName={selectedPlanConfig?.name}
+                    selectedPlanPrice={selectedPlanConfig?.price}
+                    onGoHome={() => router.push("/")}
+                    onDone={done}
+                    onReset={resetForm}
+                />
+            );
+        }
     }
 
     return (
@@ -453,140 +470,79 @@ export default function WorkersPage() {
                     onStepSelect={moveToStep}
                 />
 
-                <Card className="border-0 shadow-xl">
-                    <form onSubmit={handleWorkerSubmit}>
-                        <CardHeader className="pb-2">
-                            <CardTitle>{formStep === 5 ? "Final. Subscription" : "Green Workers Multi-Step Form"}</CardTitle>
-                            <CardDescription>{formStep < 5 ? "Subsections follow PDF pages 10-13." : "Choose a plan then submit."}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-5">
-                            {formStep === 1 && (
-                                <div className="ui-form-section-worker">
-                                    <h3 className="font-semibold">1. Personal Information</h3>
-                                    <div className="grid sm:grid-cols-2 gap-4">
-                                        <div className="space-y-2"><Label>Full Name *</Label><Input placeholder="Your full name" value={name} onChange={(e) => { setName(e.target.value); clearFieldError("name"); }} className={getFieldClass("name", "ui-field-worker")} />{renderFieldError("name")}</div>
-                                        <div className="space-y-2"><Label>Phone Number *</Label><Input placeholder="+216 ..." value={phone} onChange={(e) => { setPhone(e.target.value); clearFieldError("phone"); }} className={getFieldClass("phone", "ui-field-worker")} />{renderFieldError("phone")}</div>
-                                    </div>
-                                    <div className="grid sm:grid-cols-2 gap-4">
-                                        <div className="space-y-2"><Label>Email *</Label><Input type="email" placeholder="your@email.com" value={email} onChange={(e) => { setEmail(e.target.value); clearFieldError("email"); }} className={getFieldClass("email", "ui-field-worker")} />{renderFieldError("email")}</div>
-                                        <div className="space-y-2"><Label>City / Region *</Label><Input placeholder="Ex: Tunis / Ariana" value={location} onChange={(e) => { setLocation(e.target.value); clearFieldError("location"); }} className={getFieldClass("location", "ui-field-worker")} />{renderFieldError("location")}</div>
-                                    </div>
-                                    <div className="space-y-2"><Label>Age (optional)</Label><Input placeholder="Ex: 29" value={age} onChange={(e) => setAge(e.target.value)} className="ui-field-worker" /></div>
-                                </div>
-                            )}
-
-                            {formStep === 2 && (
-                                <div className="ui-form-section-worker">
-                                    <h3 className="font-semibold">2. Professional Profile</h3>
-                                    <div className="space-y-2"><Label>Current occupation</Label><Select value={occupation} onValueChange={setOccupation}><SelectTrigger className="ui-field-worker"><SelectValue placeholder="Select occupation" /></SelectTrigger><SelectContent>{workerOccupations.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
-                                    <div className="space-y-2"><Label>Trade *</Label><Select value={trade} onValueChange={(value) => { setTrade(value); clearFieldError("trade"); if (value !== "Other") clearFieldError("otherTrade"); }}><SelectTrigger className={getFieldClass("trade", "ui-field-worker")}><SelectValue placeholder="Select trade" /></SelectTrigger><SelectContent>{workerTrades.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select>{renderFieldError("trade")}</div>
-                                    {trade === "Other" && <div className="space-y-2"><Label>Other (specify) *</Label><Input placeholder="Specify your trade" value={otherTrade} onChange={(e) => { setOtherTrade(e.target.value); clearFieldError("otherTrade"); }} className={getFieldClass("otherTrade", "ui-field-worker")} />{renderFieldError("otherTrade")}</div>}
-                                    <div className="space-y-2"><Label>Years of experience</Label><Select value={yearsExperience} onValueChange={setYearsExperience}><SelectTrigger className="ui-field-worker"><SelectValue placeholder="Select range" /></SelectTrigger><SelectContent>{workerExperienceOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
-                                </div>
-                            )}
-
-                            {formStep === 3 && (
-                                <>
-                                    <div className="ui-form-section-worker">
-                                        <h3 className="font-semibold">3. Skills & Practical Experience</h3>
-                                        <div className="space-y-2"><Label>What tasks can you perform?</Label><div className="grid sm:grid-cols-2 gap-3">{taskOptions.map((option) => <label key={option} className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={tasks.includes(option)} onChange={() => { toggleValue(option, tasks, setTasks); if (option === "Other" && tasks.includes("Other")) clearFieldError("otherTask"); }} className="rounded border-lime-300 text-lime-600 focus:ring-lime-500" />{option}</label>)}</div></div>
-                                        {tasks.includes("Other") && <div className="space-y-2"><Label>Other task *</Label><Input placeholder="Specify other task" value={otherTask} onChange={(e) => { setOtherTask(e.target.value); clearFieldError("otherTask"); }} className={getFieldClass("otherTask", "ui-field-worker")} />{renderFieldError("otherTask")}</div>}
-                                        <div className="grid sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2"><Label>Have you worked on construction sites?</Label><Select value={workedOnSites} onValueChange={setWorkedOnSites}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem></SelectContent></Select></div>
-                                            <div className="space-y-2"><Label>Experience in green/sustainable projects?</Label><Select value={greenProjectExperience} onValueChange={setGreenProjectExperience}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem></SelectContent></Select></div>
-                                        </div>
-                                    </div>
-                                    <div className="rounded-xl border border-lime-100 p-4 space-y-4">
-                                        <h3 className="font-semibold">4. Technical Skills Level</h3>
-                                        <div className="space-y-2"><Label>Your level in your trade</Label><Select value={tradeLevel} onValueChange={setTradeLevel}><SelectTrigger className="ui-field-worker"><SelectValue placeholder="Select level" /></SelectTrigger><SelectContent>{tradeLevelOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
-                                        <div className="space-y-2"><Label>Do you use any tools or machines? (specify)</Label><Textarea placeholder="List tools/machines you use" value={toolsMachines} onChange={(e) => setToolsMachines(e.target.value)} className="ui-textarea-worker min-h-[90px]" /></div>
-                                    </div>
-                                </>
-                            )}
-
-                            {formStep === 4 && (
-                                <>
-                                    <div className="rounded-xl border border-lime-100 p-4 space-y-4">
-                                        <h3 className="font-semibold">5. Certifications & Training</h3>
-                                        <div className="space-y-2"><Label>Any technical training completed?</Label><Textarea placeholder="Describe completed training" value={technicalTraining} onChange={(e) => setTechnicalTraining(e.target.value)} className="rounded-xl min-h-[90px] border-emerald-200/50" /></div>
-                                        <div className="space-y-2"><Label>Certifications (if any)</Label><Input placeholder="Safety, Electrical, HVAC, Solar, etc." value={workerCertifications} onChange={(e) => setWorkerCertifications(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                    </div>
-                                    <div className="rounded-xl border border-lime-100 p-4 space-y-4">
-                                        <h3 className="font-semibold">6. Availability & Work Preferences</h3>
-                                        <div className="grid sm:grid-cols-3 gap-4">
-                                            <div className="space-y-2"><Label>Currently available for work?</Label><Select value={currentlyAvailable} onValueChange={setCurrentlyAvailable}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem></SelectContent></Select></div>
-                                            <div className="space-y-2"><Label>Type of work</Label><Select value={workType} onValueChange={setWorkType}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{workTypeOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
-                                            <div className="space-y-2"><Label>Mobility</Label><Select value={mobility} onValueChange={setMobility}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select mobility" /></SelectTrigger><SelectContent>{mobilityOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
-                                        </div>
-                                    </div>
-                                    <div className="rounded-xl border border-lime-100 p-4 space-y-4">
-                                        <h3 className="font-semibold">7. Interest in Green Construction</h3>
-                                        <div className="space-y-2"><Label>Interested in sustainable / green construction?</Label><Select value={interestedInGreen} onValueChange={setInterestedInGreen}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem></SelectContent></Select></div>
-                                        <div className="space-y-2"><Label>Which areas interest you?</Label><div className="grid sm:grid-cols-2 gap-3">{greenAreas.map((option) => <label key={option} className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={greenInterestAreas.includes(option)} onChange={() => toggleValue(option, greenInterestAreas, setGreenInterestAreas)} className="rounded border-lime-300 text-lime-600 focus:ring-lime-500" />{option}</label>)}</div></div>
-                                    </div>
-                                    <div className="rounded-xl border border-lime-100 p-4 space-y-4">
-                                        <h3 className="font-semibold">8. Training Needs</h3>
-                                        <div className="grid sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2"><Label>Do you want training?</Label><Select value={wantsTraining} onValueChange={(value) => { setWantsTraining(value); if (value !== "Yes") clearFieldError("preferredTrainingType"); }}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem></SelectContent></Select></div>
-                                            <div className="space-y-2"><Label>Preferred training type {wantsTraining === "Yes" ? "*" : ""}</Label><Select value={preferredTrainingType} onValueChange={(value) => { setPreferredTrainingType(value); clearFieldError("preferredTrainingType"); }}><SelectTrigger className={getFieldClass("preferredTrainingType", "rounded-xl h-12 border-emerald-200/50")}><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{trainingTypeOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select>{renderFieldError("preferredTrainingType")}</div>
-                                        </div>
-                                    </div>
-                                    <div className="rounded-xl border border-lime-100 p-4 space-y-4">
-                                        <h3 className="font-semibold">9. Documents (Optional but powerful)</h3>
-                                        <div className="space-y-2"><Label>Upload CV (if available)</Label><Input placeholder="Paste CV link" value={cvLink} onChange={(e) => setCvLink(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                        <div className="space-y-2"><Label>Upload certifications</Label><Input placeholder="Paste certifications link" value={workerCertificatesLink} onChange={(e) => setWorkerCertificatesLink(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                        <div className="space-y-2"><Label>Portfolio / photos of previous work</Label><Input placeholder="Paste portfolio/photos link" value={portfolioLink} onChange={(e) => setPortfolioLink(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                    </div>
-                                    <div className="rounded-xl border border-lime-100 p-4 space-y-4">
-                                        <h3 className="font-semibold">10. Consent *</h3>
-                                        <label className="flex items-start gap-3 text-sm text-muted-foreground"><input type="checkbox" checked={consent} onChange={(e) => { setConsent(e.target.checked); clearFieldError("consent"); }} className="mt-0.5 rounded border-lime-300 text-lime-600 focus:ring-lime-500" /><span>Agreement to share data for job opportunities and training.</span></label>
-                                        {renderFieldError("consent")}
-                                    </div>
-                                </>
-                            )}
-
-                            {formStep === 5 && (
-                                <div className="space-y-6">
-                                    <div className="text-center p-4 rounded-xl bg-lime-50 dark:bg-lime-900/20 border border-lime-200 dark:border-lime-800">
-                                        <p className="text-sm text-lime-700 dark:text-lime-300">
-                                            <span className="font-semibold">Selected Plan:</span> {workerSubscriptionPlans.find((p) => p.id === selectedPlan)?.name} ({workerSubscriptionPlans.find((p) => p.id === selectedPlan)?.price})
-                                        </p>
-                                    </div>
-                                    <div className="flex flex-wrap justify-center gap-6">
-                                        {workerSubscriptionPlans.map((plan) => (
-                                            <Card key={plan.id} className={`relative w-full max-w-sm cursor-pointer overflow-hidden border-2 transition-all duration-500 ${selectedPlan === plan.id ? `${plan.borderColor} shadow-xl ring-2 ring-lime-500` : "border-transparent shadow-lg hover:shadow-xl"}`} onClick={() => setSelectedPlan(plan.id)}>
-                                                {plan.popular && <Badge className="absolute top-4 right-4 rounded-full bg-gradient-to-r from-lime-500 to-emerald-500 text-white border-0 text-xs"><Sparkles className="w-3 h-3 mr-1" />Popular</Badge>}
-                                                <CardContent className="p-6">
-                                                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${plan.color} flex items-center justify-center shadow-lg mb-4`}><plan.icon className="w-6 h-6 text-white" /></div>
-                                                    <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
-                                                    <p className="text-2xl font-bold gradient-text mb-4">{plan.price}</p>
-                                                    <ul className="space-y-2">{plan.features.map((f) => <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground"><CheckCircle2 className="w-4 h-4 text-lime-500 shrink-0" />{f}</li>)}</ul>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {error && <p className="text-sm text-red-500 text-center">{error}</p>}
-
-                            <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
-                                <Button variant="outline" className="w-full rounded-full px-6 sm:w-auto" type="button" onClick={() => formStep === 1 ? setShowForm(false) : setFormStep((s) => Math.max(1, s - 1))} disabled={isLoading}>
-                                    <ArrowLeft className="w-4 h-4 mr-2" />Back
-                                </Button>
-                                {formStep < 5 ? (
-                                    <Button type="button" className="w-full rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 text-white px-8 shadow-lg shadow-lime-500/20 sm:w-auto" onClick={() => moveToStep(Math.min(5, formStep + 1))}>
-                                        Next<ArrowRight className="w-4 h-4 ml-2" />
-                                    </Button>
-                                ) : (
-                                    <Button className="ui-btn-worker w-full px-8 sm:w-auto" type="submit" disabled={isLoading}>
-                                        {isLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</> : <><Send className="w-4 h-4 mr-2" />Submit Profile</>}
-                                    </Button>
-                                )}
-                            </div>
-                        </CardContent>
-                    </form>
-                </Card>
+                <WorkerRegistrationStepContent
+                    formStep={formStep}
+                    error={error}
+                    isLoading={isLoading}
+                    selectedPlan={selectedPlan}
+                    selectedPlanName={selectedPlanConfig?.name}
+                    selectedPlanPrice={selectedPlanConfig?.price}
+                    selectedPlanError={Boolean(fieldErrors.selectedPlan)}
+                    name={name}
+                    phone={phone}
+                    email={email}
+                    location={location}
+                    age={age}
+                    occupation={occupation}
+                    trade={trade}
+                    otherTrade={otherTrade}
+                    yearsExperience={yearsExperience}
+                    tasks={tasks}
+                    otherTask={otherTask}
+                    workedOnSites={workedOnSites}
+                    greenProjectExperience={greenProjectExperience}
+                    tradeLevel={tradeLevel}
+                    toolsMachines={toolsMachines}
+                    technicalTraining={technicalTraining}
+                    workerCertifications={workerCertifications}
+                    currentlyAvailable={currentlyAvailable}
+                    workType={workType}
+                    mobility={mobility}
+                    interestedInGreen={interestedInGreen}
+                    greenInterestAreas={greenInterestAreas}
+                    wantsTraining={wantsTraining}
+                    preferredTrainingType={preferredTrainingType}
+                    cvLink={cvLink}
+                    workerCertificatesLink={workerCertificatesLink}
+                    portfolioLink={portfolioLink}
+                    consent={consent}
+                    setName={setName}
+                    setPhone={setPhone}
+                    setEmail={setEmail}
+                    setLocation={setLocation}
+                    setAge={setAge}
+                    setOccupation={setOccupation}
+                    setTrade={setTrade}
+                    setOtherTrade={setOtherTrade}
+                    setYearsExperience={setYearsExperience}
+                    setTasks={setTasks}
+                    setOtherTask={setOtherTask}
+                    setWorkedOnSites={setWorkedOnSites}
+                    setGreenProjectExperience={setGreenProjectExperience}
+                    setTradeLevel={setTradeLevel}
+                    setToolsMachines={setToolsMachines}
+                    setTechnicalTraining={setTechnicalTraining}
+                    setWorkerCertifications={setWorkerCertifications}
+                    setCurrentlyAvailable={setCurrentlyAvailable}
+                    setWorkType={setWorkType}
+                    setMobility={setMobility}
+                    setInterestedInGreen={setInterestedInGreen}
+                    setGreenInterestAreas={setGreenInterestAreas}
+                    setWantsTraining={setWantsTraining}
+                    setPreferredTrainingType={setPreferredTrainingType}
+                    setCvLink={setCvLink}
+                    setWorkerCertificatesLink={setWorkerCertificatesLink}
+                    setPortfolioLink={setPortfolioLink}
+                    setConsent={setConsent}
+                    setSelectedPlan={setSelectedPlan}
+                    toggleValue={toggleValue}
+                    clearFieldError={clearFieldError}
+                    getFieldClass={getFieldClass}
+                    renderFieldError={renderFieldError}
+                    onBack={() => formStep === 1 ? setShowForm(false) : setFormStep((currentStep) => Math.max(1, currentStep - 1))}
+                    onNext={() => moveToStep(Math.min(5, formStep + 1))}
+                    onSubmit={handleWorkerSubmit}
+                />
             </div>
         </div>
     );
