@@ -151,6 +151,76 @@
   }
 }
 
+@layer components {
+  .ui-page-shell {
+    @apply min-h-screen px-4 pt-24 pb-16 sm:px-6 lg:px-8;
+  }
+
+  .ui-page-shell-centered {
+    @apply min-h-screen flex items-center justify-center px-4 pt-24 pb-16 sm:px-6 lg:px-8;
+  }
+
+  .ui-page-container-4xl {
+    @apply mx-auto max-w-4xl;
+  }
+
+  .ui-page-container-5xl {
+    @apply mx-auto max-w-5xl;
+  }
+
+  .ui-page-container-6xl {
+    @apply mx-auto max-w-6xl;
+  }
+
+  .ui-badge-brand {
+    @apply mb-4 max-w-full whitespace-normal border-emerald-200/50 bg-emerald-100/80 px-4 py-1.5 text-center text-sm leading-snug text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300;
+  }
+
+  .ui-badge-worker {
+    @apply mb-4 max-w-full whitespace-normal border-lime-200/50 bg-lime-100/80 px-4 py-1.5 text-center text-sm leading-snug text-lime-700 dark:bg-lime-900/30 dark:text-lime-300;
+  }
+
+  .ui-form-section {
+    @apply rounded-xl border border-emerald-100 p-4 space-y-4;
+  }
+
+  .ui-form-section-worker {
+    @apply rounded-xl border border-lime-100 p-4 space-y-4;
+  }
+
+  .ui-field {
+    @apply h-12 rounded-xl border-emerald-200/50;
+  }
+
+  .ui-field-worker {
+    @apply h-12 rounded-xl border-lime-200/60;
+  }
+
+  .ui-textarea {
+    @apply rounded-xl border-emerald-200/50;
+  }
+
+  .ui-textarea-worker {
+    @apply rounded-xl border-lime-200/60;
+  }
+
+  .ui-mobile-progress-brand {
+    @apply rounded-2xl border border-emerald-100 bg-card/80 p-4 shadow-sm;
+  }
+
+  .ui-mobile-progress-worker {
+    @apply rounded-2xl border border-lime-100 bg-card/80 p-4 shadow-sm;
+  }
+
+  .ui-btn-brand {
+    @apply rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:from-emerald-700 hover:to-teal-700 hover:shadow-emerald-500/40;
+  }
+
+  .ui-btn-worker {
+    @apply rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 text-white shadow-lg shadow-lime-500/20 transition-all duration-300 hover:from-lime-700 hover:to-emerald-700 hover:shadow-lime-500/40;
+  }
+}
+
 /* Custom animations */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }

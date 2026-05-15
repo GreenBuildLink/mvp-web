@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageIntro } from "@/components/ui/page-intro";
+import { StepProgress } from "@/components/ui/step-progress";
 import { Textarea } from "@/components/ui/textarea";
 import {
     Select,
@@ -58,8 +60,8 @@ const designerSteps = [
 
 const subscriptionPlans = [
     {
-        id: "starter",
-        name: "GB Starter Link",
+        id: "discovery",
+        name: "GB Discovery Link",
         price: "EUR 0",
         icon: Star,
         color: "from-gray-400 to-gray-500",
@@ -68,7 +70,7 @@ const subscriptionPlans = [
     },
     {
         id: "professional",
-        name: "GB Business Link",
+        name: "GB Professional Link",
         price: "EUR 29/month",
         icon: Zap,
         color: "from-emerald-500 to-teal-600",
@@ -77,8 +79,8 @@ const subscriptionPlans = [
         features: ["Priority matching", "Advanced profile", "Exclusive opportunities"],
     },
     {
-        id: "enterprise",
-        name: "GB Premium Link",
+        id: "accredited",
+        name: "GB Accredited Link",
         price: "EUR 79/month",
         icon: Crown,
         color: "from-amber-500 to-amber-600",
@@ -188,7 +190,7 @@ export default function NewProjectPage() {
 
     if (submitted) {
         return (
-            <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+            <div className="ui-page-shell-centered">
                 <Card className="max-w-lg w-full border-0 shadow-2xl animate-scale-in">
                     <CardContent className="p-10 text-center">
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-500/30 animate-pulse-glow">
@@ -213,7 +215,7 @@ export default function NewProjectPage() {
                         </div>
 
                         <div className="space-y-3">
-                            <Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg" onClick={() => router.push("/")}>
+                            <Button className="ui-btn-brand w-full" onClick={() => router.push("/")}>
                                 Go to Home
                             </Button>
                             <Button variant="outline" className="w-full rounded-full" onClick={() => setSubmitted(false)}>
@@ -227,9 +229,20 @@ export default function NewProjectPage() {
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-10">
+        <div className="ui-page-shell">
+            <div className="ui-page-container-4xl">
+                <PageIntro
+                    badge="Green Designers Hub - Registration"
+                    icon={Compass}
+                    title={
+                        <>
+                            Join as a <span className="gradient-text">Green Designer</span>
+                        </>
+                    }
+                    className="mb-10"
+                />
+
+                <div className="hidden">
                     <Badge className="mb-4 max-w-full whitespace-normal px-4 py-1.5 text-center text-sm leading-snug bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                         <Compass className="w-4 h-4 mr-2" />
                         Green Designers Hub — Registration
@@ -237,7 +250,14 @@ export default function NewProjectPage() {
                     <h1 className="text-3xl sm:text-4xl font-bold mb-4">Join as a <span className="gradient-text">Green Designer</span></h1>
                 </div>
 
-                <div className="mb-10 space-y-4">
+                <StepProgress
+                    currentStep={step}
+                    steps={designerSteps.map(({ label, icon }) => ({ label, icon }))}
+                    className="mb-10"
+                    onStepSelect={setStep}
+                />
+
+                <div className="hidden">
                     <div className="rounded-2xl border border-emerald-100 bg-card/80 p-4 shadow-sm sm:hidden">
                         <div className="mb-3 flex items-center justify-between gap-3 text-xs font-medium text-muted-foreground">
                             <span>Step {step} of {designerSteps.length}</span>
@@ -271,18 +291,18 @@ export default function NewProjectPage() {
                         <CardContent className="space-y-5 pt-4">
                             <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
                                 <h3 className="font-semibold">1. Personal Information</h3>
-                                <div className="space-y-2"><Label>Full name *</Label><Input placeholder="Your full name" value={fullName} onChange={(e) => setFullName(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
+                                <div className="space-y-2"><Label>Full name *</Label><Input placeholder="Your full name" value={fullName} onChange={(e) => setFullName(e.target.value)} className="ui-field" /></div>
                                 <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="space-y-2"><Label>Email address *</Label><Input type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                    <div className="space-y-2"><Label>Phone number *</Label><Input placeholder="+216 ..." value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
+                                    <div className="space-y-2"><Label>Email address *</Label><Input type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="ui-field" /></div>
+                                    <div className="space-y-2"><Label>Phone number *</Label><Input placeholder="+216 ..." value={phone} onChange={(e) => setPhone(e.target.value)} className="ui-field" /></div>
                                 </div>
                                 <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="space-y-2"><Label>Country *</Label><Input placeholder="Ex: Tunisia" value={country} onChange={(e) => setCountry(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                    <div className="space-y-2"><Label>City *</Label><Input placeholder="Ex: Tunis" value={city} onChange={(e) => setCity(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
+                                    <div className="space-y-2"><Label>Country *</Label><Input placeholder="Ex: Tunisia" value={country} onChange={(e) => setCountry(e.target.value)} className="ui-field" /></div>
+                                    <div className="space-y-2"><Label>City *</Label><Input placeholder="Ex: Tunis" value={city} onChange={(e) => setCity(e.target.value)} className="ui-field" /></div>
                                 </div>
-                                <div className="space-y-2"><Label>Current position / job title *</Label><Input placeholder="Ex: Junior Architect" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
+                                <div className="space-y-2"><Label>Current position / job title *</Label><Input placeholder="Ex: Junior Architect" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className="ui-field" /></div>
                             </div>
-                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end"><Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-8 text-white sm:w-auto" onClick={() => setStep(2)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
+                            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end"><Button className="ui-btn-brand w-full px-8 sm:w-auto" onClick={() => setStep(2)}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button></div>
                         </CardContent>
                     </Card>
                 )}

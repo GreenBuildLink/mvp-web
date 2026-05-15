@@ -1,11 +1,11 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageIntro } from "@/components/ui/page-intro";
 import {
     Select,
     SelectContent,
@@ -13,6 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { StepProgress } from "@/components/ui/step-progress";
 import {
     ArrowLeft,
     ArrowRight,
@@ -143,7 +144,7 @@ export default function ConsultationRequestPage() {
 
     if (submitted) {
         return (
-            <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+            <div className="ui-page-shell-centered">
                 <Card className="max-w-lg w-full border-0 shadow-2xl animate-scale-in">
                     <CardContent className="p-10 text-center">
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-500/30">
@@ -160,54 +161,25 @@ export default function ConsultationRequestPage() {
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-8">
-                    <Badge className="mb-4 max-w-full whitespace-normal px-4 py-1.5 text-center text-sm leading-snug bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                        <Compass className="w-4 h-4 mr-2" />
-                        Request Consultation
-                    </Badge>
-                    <h1 className="text-3xl sm:text-4xl font-bold mb-3">
-                        Consultation <span className="gradient-text">Request Form</span>
-                    </h1>
-                </div>
+        <div className="ui-page-shell">
+            <div className="ui-page-container-4xl">
+                <PageIntro
+                    badge="Request Consultation"
+                    icon={Compass}
+                    title={
+                        <>
+                            Consultation <span className="gradient-text">Request Form</span>
+                        </>
+                    }
+                    className="mb-8"
+                />
 
-                <div className="mb-8 space-y-4">
-                    <div className="rounded-2xl border border-emerald-100 bg-card/80 p-4 shadow-sm sm:hidden">
-                        <div className="mb-3 flex items-center justify-between gap-3 text-xs font-medium text-muted-foreground">
-                            <span>Step {step} of {consultationSteps.length}</span>
-                            <span className="text-right text-emerald-700">{consultationSteps[step - 1]}</span>
-                        </div>
-                        <div className="h-2 rounded-full bg-emerald-100">
-                            <div
-                                className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 transition-all"
-                                style={{ width: `${(step / consultationSteps.length) * 100}%` }}
-                            />
-                        </div>
-                    </div>
-                    <div className="hidden overflow-x-auto pb-2 sm:block">
-                        <div className="flex w-max min-w-full items-center justify-start gap-2 sm:justify-center">
-                            {consultationSteps.map((label, index) => {
-                            const s = index + 1;
-                            return (
-                                <button
-                                    key={label}
-                                    type="button"
-                                    onClick={() => setStep(s)}
-                                    className={`shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${step === s
-                                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white"
-                                        : step > s
-                                            ? "bg-emerald-100 text-emerald-700"
-                                            : "bg-muted text-muted-foreground"
-                                        }`}
-                                >
-                                    {s}. {label}
-                                </button>
-                            );
-                        })}
-                        </div>
-                    </div>
-                </div>
+                <StepProgress
+                    currentStep={step}
+                    steps={consultationSteps.map((label) => ({ label }))}
+                    className="mb-8"
+                    onStepSelect={setStep}
+                />
 
                 <form onSubmit={handleSubmit}>
                     <Card className="border-0 shadow-xl">
@@ -222,55 +194,55 @@ export default function ConsultationRequestPage() {
                         </CardHeader>
                         <CardContent className="space-y-6 pt-4">
                             {step === 1 && (
-                                <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
+                                <div className="ui-form-section">
                                     <div className="grid sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>First name *</Label>
-                                            <Input placeholder="Ex: Sarah" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input placeholder="Ex: Sarah" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="ui-field" />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Last name *</Label>
-                                            <Input placeholder="Ex: Ben Ali" value={lastName} onChange={(e) => setLastName(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input placeholder="Ex: Ben Ali" value={lastName} onChange={(e) => setLastName(e.target.value)} className="ui-field" />
                                         </div>
                                     </div>
                                     <div className="grid sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>Phone *</Label>
-                                            <Input placeholder="Ex: +216 52 000 072" value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input placeholder="Ex: +216 52 000 072" value={phone} onChange={(e) => setPhone(e.target.value)} className="ui-field" />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Email *</Label>
-                                            <Input type="email" placeholder="Ex: sarah@company.com" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input type="email" placeholder="Ex: sarah@company.com" value={email} onChange={(e) => setEmail(e.target.value)} className="ui-field" />
                                         </div>
                                     </div>
                                     <div className="grid sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>Address *</Label>
-                                            <Input placeholder="Ex: 45 Green Avenue, Tunis" value={address} onChange={(e) => setAddress(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input placeholder="Ex: 45 Green Avenue, Tunis" value={address} onChange={(e) => setAddress(e.target.value)} className="ui-field" />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Position *</Label>
-                                            <Input placeholder="Ex: Project Manager" value={position} onChange={(e) => setPosition(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input placeholder="Ex: Project Manager" value={position} onChange={(e) => setPosition(e.target.value)} className="ui-field" />
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             {step === 2 && (
-                                <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
+                                <div className="ui-form-section">
                                     <h3 className="font-semibold">Project location</h3>
                                     <div className="grid sm:grid-cols-3 gap-4">
                                         <div className="space-y-2">
                                             <Label>Country *</Label>
-                                            <Input placeholder="Ex: Tunisia" value={projectCountry} onChange={(e) => setProjectCountry(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input placeholder="Ex: Tunisia" value={projectCountry} onChange={(e) => setProjectCountry(e.target.value)} className="ui-field" />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>City *</Label>
-                                            <Input placeholder="Ex: Sfax" value={projectCity} onChange={(e) => setProjectCity(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input placeholder="Ex: Sfax" value={projectCity} onChange={(e) => setProjectCity(e.target.value)} className="ui-field" />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Climate zone *</Label>
-                                            <Input placeholder="Ex: Hot semi-arid" value={climateZone} onChange={(e) => setClimateZone(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input placeholder="Ex: Hot semi-arid" value={climateZone} onChange={(e) => setClimateZone(e.target.value)} className="ui-field" />
                                         </div>
                                     </div>
 
@@ -278,7 +250,7 @@ export default function ConsultationRequestPage() {
                                         <div className="space-y-2">
                                             <Label>Project type *</Label>
                                             <Select value={projectType} onValueChange={setProjectType}>
-                                                <SelectTrigger className="rounded-xl h-12 border-emerald-200/50">
+                                                <SelectTrigger className="ui-field">
                                                     <SelectValue placeholder="Select project type" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -293,7 +265,7 @@ export default function ConsultationRequestPage() {
                                         <div className="space-y-2">
                                             <Label>Project stage *</Label>
                                             <Select value={projectStage} onValueChange={setProjectStage}>
-                                                <SelectTrigger className="rounded-xl h-12 border-emerald-200/50">
+                                                <SelectTrigger className="ui-field">
                                                     <SelectValue placeholder="Select project stage" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -311,28 +283,28 @@ export default function ConsultationRequestPage() {
                                     <div className="grid sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>Land area (m2) *</Label>
-                                            <Input type="number" min="0" placeholder="Ex: 5000" value={landArea} onChange={(e) => setLandArea(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input type="number" min="0" placeholder="Ex: 5000" value={landArea} onChange={(e) => setLandArea(e.target.value)} className="ui-field" />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Built-up area (m2) *</Label>
-                                            <Input type="number" min="0" placeholder="Ex: 3200" value={builtUpArea} onChange={(e) => setBuiltUpArea(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input type="number" min="0" placeholder="Ex: 3200" value={builtUpArea} onChange={(e) => setBuiltUpArea(e.target.value)} className="ui-field" />
                                         </div>
                                     </div>
                                     <div className="grid sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>Timeline start date *</Label>
-                                            <Input type="date" placeholder="YYYY-MM-DD" value={timelineStart} onChange={(e) => setTimelineStart(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input type="date" placeholder="YYYY-MM-DD" value={timelineStart} onChange={(e) => setTimelineStart(e.target.value)} className="ui-field" />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Timeline delivery date *</Label>
-                                            <Input type="date" placeholder="YYYY-MM-DD" value={timelineDelivery} onChange={(e) => setTimelineDelivery(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                            <Input type="date" placeholder="YYYY-MM-DD" value={timelineDelivery} onChange={(e) => setTimelineDelivery(e.target.value)} className="ui-field" />
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             {step === 3 && (
-                                <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
+                                <div className="ui-form-section">
                                     <div className="grid sm:grid-cols-2 gap-3">
                                         {requiredServiceOptions.map((option) => (
                                             <label key={option} className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -374,14 +346,14 @@ export default function ConsultationRequestPage() {
                                 {step < 3 ? (
                                     <Button
                                         type="button"
-                                        className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 sm:w-auto"
+                                        className="ui-btn-brand w-full px-8 sm:w-auto"
                                         onClick={() => setStep((s) => Math.min(3, s + 1))}
                                     >
                                         Next
                                         <ArrowRight className="w-4 h-4 ml-2" />
                                     </Button>
                                 ) : (
-                                    <Button type="submit" className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-10 sm:w-auto" disabled={isLoading}>
+                                    <Button type="submit" className="ui-btn-brand w-full px-10 sm:w-auto" disabled={isLoading}>
                                         {isLoading ? (
                                             <>
                                                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageIntro } from "@/components/ui/page-intro";
+import { StepProgress } from "@/components/ui/step-progress";
 import { Textarea } from "@/components/ui/textarea";
 import {
     Select,
@@ -22,7 +24,6 @@ import {
     CheckCircle2,
     Send,
     Loader2,
-    Crown,
     Star,
     Zap,
     Sparkles,
@@ -47,8 +48,8 @@ const workerSteps = ["Personal", "Profile", "Skills", "Training", "Subscription"
 
 const workerSubscriptionPlans = [
     {
-        id: "starter",
-        name: "GB Starter Link",
+        id: "qualified",
+        name: "GB Qualified Link",
         price: "EUR 0",
         icon: Star,
         color: "from-gray-400 to-gray-500",
@@ -56,23 +57,14 @@ const workerSubscriptionPlans = [
         features: ["Basic worker profile", "Directory visibility", "Community updates"],
     },
     {
-        id: "professional",
-        name: "GB Business Link",
+        id: "verified",
+        name: "GB Verified Link",
         price: "EUR 19/month",
         icon: Zap,
         color: "from-lime-500 to-emerald-600",
         borderColor: "border-lime-300",
         popular: true,
         features: ["Priority project matching", "Highlighted profile", "Training priority"],
-    },
-    {
-        id: "enterprise",
-        name: "GB Premium Link",
-        price: "EUR 49/month",
-        icon: Crown,
-        color: "from-amber-500 to-amber-600",
-        borderColor: "border-amber-300",
-        features: ["Top listing visibility", "Premium support", "Partnership opportunities"],
     },
 ];
 
@@ -116,7 +108,7 @@ export default function WorkersPage() {
     const [workerCertificatesLink, setWorkerCertificatesLink] = useState("");
     const [portfolioLink, setPortfolioLink] = useState("");
     const [consent, setConsent] = useState(false);
-    const [selectedPlan, setSelectedPlan] = useState("professional");
+    const [selectedPlan, setSelectedPlan] = useState("verified");
 
     const handleWorkerSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -305,7 +297,7 @@ export default function WorkersPage() {
 
     if (submitted) {
         return (
-            <div className="min-h-screen pt-24 pb-16 px-4 flex items-center justify-center">
+            <div className="ui-page-shell-centered">
                 <Card className="max-w-md w-full border-0 shadow-2xl animate-scale-in">
                     <CardContent className="p-10 text-center">
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-lime-500 to-emerald-600 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-lime-500/30">
@@ -315,7 +307,7 @@ export default function WorkersPage() {
                         <p className="text-muted-foreground mb-2">Your worker profile has been submitted successfully.</p>
                         <p className="text-sm font-medium text-lime-600 dark:text-lime-400 mb-6">Plan: {workerSubscriptionPlans.find((p) => p.id === selectedPlan)?.name}</p>
                         <div className="space-y-3">
-                            <Button className="w-full rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 text-white shadow-lg" onClick={() => router.push("/")}>
+                            <Button className="ui-btn-worker w-full" onClick={() => router.push("/")}>
                                 Go to Home
                             </Button>
                             <Button variant="outline" className="w-full rounded-full" onClick={() => { setSubmitted(false); setShowForm(false); setFormStep(1); }}>
@@ -329,45 +321,27 @@ export default function WorkersPage() {
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-10">
-                    <Badge className="mb-4 max-w-full whitespace-normal px-4 py-1.5 text-center text-sm leading-snug bg-lime-100/80 text-lime-700">
-                        <HardHat className="w-4 h-4 mr-2" />
-                        Green Workers Space
-                    </Badge>
-                    <h1 className="text-3xl sm:text-4xl font-bold mb-3">Green Workers <span className="gradient-text">Registration Form</span></h1>
-                </div>
+        <div className="ui-page-shell">
+            <div className="ui-page-container-4xl">
+                <PageIntro
+                    accent="worker"
+                    badge="Green Workers Space"
+                    icon={HardHat}
+                    title={
+                        <>
+                            Green Workers <span className="gradient-text">Registration Form</span>
+                        </>
+                    }
+                    className="mb-10"
+                />
 
-                <div className="mb-10 space-y-4">
-                    <div className="rounded-2xl border border-lime-100 bg-card/80 p-4 shadow-sm sm:hidden">
-                        <div className="mb-3 flex items-center justify-between gap-3 text-xs font-medium text-muted-foreground">
-                            <span>Step {formStep} of {workerSteps.length}</span>
-                            <span className="text-right text-lime-700">{workerSteps[formStep - 1]}</span>
-                        </div>
-                        <div className="h-2 rounded-full bg-lime-100">
-                            <div
-                                className="h-full rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 transition-all"
-                                style={{ width: `${(formStep / workerSteps.length) * 100}%` }}
-                            />
-                        </div>
-                    </div>
-                    <div className="hidden overflow-x-auto pb-2 sm:block">
-                        <div className="flex w-max min-w-full items-center justify-start gap-2 sm:justify-center">
-                    {workerSteps.map((label, index) => {
-                        const s = index + 1;
-                        return (
-                            <div key={label} className="flex shrink-0 items-center gap-2">
-                                <button type="button" onClick={() => setFormStep(s)} className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${formStep === s ? "bg-gradient-to-r from-lime-600 to-emerald-600 text-white" : formStep > s ? "bg-lime-100 text-lime-700" : "bg-muted text-muted-foreground"}`}>
-                                    {s}. {label}
-                                </button>
-                                {index < 4 && <div className={`w-8 h-0.5 rounded-full ${formStep > s ? "bg-lime-500" : "bg-muted"}`} />}
-                            </div>
-                        );
-                    })}
-                        </div>
-                    </div>
-                </div>
+                <StepProgress
+                    accent="worker"
+                    currentStep={formStep}
+                    steps={workerSteps.map((label) => ({ label }))}
+                    className="mb-10"
+                    onStepSelect={setFormStep}
+                />
 
                 <Card className="border-0 shadow-xl">
                     <form onSubmit={handleWorkerSubmit}>
@@ -377,36 +351,36 @@ export default function WorkersPage() {
                         </CardHeader>
                         <CardContent className="space-y-5">
                             {formStep === 1 && (
-                                <div className="rounded-xl border border-lime-100 p-4 space-y-4">
+                                <div className="ui-form-section-worker">
                                     <h3 className="font-semibold">1. Personal Information</h3>
                                     <div className="grid sm:grid-cols-2 gap-4">
-                                        <div className="space-y-2"><Label>Full Name *</Label><Input placeholder="Your full name" value={name} onChange={(e) => setName(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                        <div className="space-y-2"><Label>Phone Number *</Label><Input placeholder="+216 ..." value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
+                                        <div className="space-y-2"><Label>Full Name *</Label><Input placeholder="Your full name" value={name} onChange={(e) => setName(e.target.value)} className="ui-field-worker" /></div>
+                                        <div className="space-y-2"><Label>Phone Number *</Label><Input placeholder="+216 ..." value={phone} onChange={(e) => setPhone(e.target.value)} className="ui-field-worker" /></div>
                                     </div>
                                     <div className="grid sm:grid-cols-2 gap-4">
-                                        <div className="space-y-2"><Label>Email *</Label><Input type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                        <div className="space-y-2"><Label>City / Region *</Label><Input placeholder="Ex: Tunis / Ariana" value={location} onChange={(e) => setLocation(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
+                                        <div className="space-y-2"><Label>Email *</Label><Input type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="ui-field-worker" /></div>
+                                        <div className="space-y-2"><Label>City / Region *</Label><Input placeholder="Ex: Tunis / Ariana" value={location} onChange={(e) => setLocation(e.target.value)} className="ui-field-worker" /></div>
                                     </div>
-                                    <div className="space-y-2"><Label>Age (optional)</Label><Input placeholder="Ex: 29" value={age} onChange={(e) => setAge(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
+                                    <div className="space-y-2"><Label>Age (optional)</Label><Input placeholder="Ex: 29" value={age} onChange={(e) => setAge(e.target.value)} className="ui-field-worker" /></div>
                                 </div>
                             )}
 
                             {formStep === 2 && (
-                                <div className="rounded-xl border border-lime-100 p-4 space-y-4">
+                                <div className="ui-form-section-worker">
                                     <h3 className="font-semibold">2. Professional Profile</h3>
-                                    <div className="space-y-2"><Label>Current occupation</Label><Select value={occupation} onValueChange={setOccupation}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select occupation" /></SelectTrigger><SelectContent>{workerOccupations.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
-                                    <div className="space-y-2"><Label>Trade</Label><Select value={trade} onValueChange={setTrade}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select trade" /></SelectTrigger><SelectContent>{workerTrades.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
-                                    {trade === "Other" && <div className="space-y-2"><Label>Other (specify)</Label><Input placeholder="Specify your trade" value={otherTrade} onChange={(e) => setOtherTrade(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>}
-                                    <div className="space-y-2"><Label>Years of experience</Label><Select value={yearsExperience} onValueChange={setYearsExperience}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select range" /></SelectTrigger><SelectContent>{workerExperienceOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
+                                    <div className="space-y-2"><Label>Current occupation</Label><Select value={occupation} onValueChange={setOccupation}><SelectTrigger className="ui-field-worker"><SelectValue placeholder="Select occupation" /></SelectTrigger><SelectContent>{workerOccupations.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
+                                    <div className="space-y-2"><Label>Trade</Label><Select value={trade} onValueChange={setTrade}><SelectTrigger className="ui-field-worker"><SelectValue placeholder="Select trade" /></SelectTrigger><SelectContent>{workerTrades.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
+                                    {trade === "Other" && <div className="space-y-2"><Label>Other (specify)</Label><Input placeholder="Specify your trade" value={otherTrade} onChange={(e) => setOtherTrade(e.target.value)} className="ui-field-worker" /></div>}
+                                    <div className="space-y-2"><Label>Years of experience</Label><Select value={yearsExperience} onValueChange={setYearsExperience}><SelectTrigger className="ui-field-worker"><SelectValue placeholder="Select range" /></SelectTrigger><SelectContent>{workerExperienceOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
                                 </div>
                             )}
 
                             {formStep === 3 && (
                                 <>
-                                    <div className="rounded-xl border border-lime-100 p-4 space-y-4">
+                                    <div className="ui-form-section-worker">
                                         <h3 className="font-semibold">3. Skills & Practical Experience</h3>
                                         <div className="space-y-2"><Label>What tasks can you perform?</Label><div className="grid sm:grid-cols-2 gap-3">{taskOptions.map((option) => <label key={option} className="flex items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={tasks.includes(option)} onChange={() => toggleValue(option, tasks, setTasks)} className="rounded border-lime-300 text-lime-600 focus:ring-lime-500" />{option}</label>)}</div></div>
-                                        {tasks.includes("Other") && <div className="space-y-2"><Label>Other task</Label><Input placeholder="Specify other task" value={otherTask} onChange={(e) => setOtherTask(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>}
+                                        {tasks.includes("Other") && <div className="space-y-2"><Label>Other task</Label><Input placeholder="Specify other task" value={otherTask} onChange={(e) => setOtherTask(e.target.value)} className="ui-field-worker" /></div>}
                                         <div className="grid sm:grid-cols-2 gap-4">
                                             <div className="space-y-2"><Label>Have you worked on construction sites?</Label><Select value={workedOnSites} onValueChange={setWorkedOnSites}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem></SelectContent></Select></div>
                                             <div className="space-y-2"><Label>Experience in green/sustainable projects?</Label><Select value={greenProjectExperience} onValueChange={setGreenProjectExperience}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem></SelectContent></Select></div>
@@ -414,8 +388,8 @@ export default function WorkersPage() {
                                     </div>
                                     <div className="rounded-xl border border-lime-100 p-4 space-y-4">
                                         <h3 className="font-semibold">4. Technical Skills Level</h3>
-                                        <div className="space-y-2"><Label>Your level in your trade</Label><Select value={tradeLevel} onValueChange={setTradeLevel}><SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select level" /></SelectTrigger><SelectContent>{tradeLevelOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
-                                        <div className="space-y-2"><Label>Do you use any tools or machines? (specify)</Label><Textarea placeholder="List tools/machines you use" value={toolsMachines} onChange={(e) => setToolsMachines(e.target.value)} className="rounded-xl min-h-[90px] border-emerald-200/50" /></div>
+                                        <div className="space-y-2"><Label>Your level in your trade</Label><Select value={tradeLevel} onValueChange={setTradeLevel}><SelectTrigger className="ui-field-worker"><SelectValue placeholder="Select level" /></SelectTrigger><SelectContent>{tradeLevelOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select></div>
+                                        <div className="space-y-2"><Label>Do you use any tools or machines? (specify)</Label><Textarea placeholder="List tools/machines you use" value={toolsMachines} onChange={(e) => setToolsMachines(e.target.value)} className="ui-textarea-worker min-h-[90px]" /></div>
                                     </div>
                                 </>
                             )}
@@ -467,9 +441,9 @@ export default function WorkersPage() {
                                             <span className="font-semibold">Selected Plan:</span> {workerSubscriptionPlans.find((p) => p.id === selectedPlan)?.name} ({workerSubscriptionPlans.find((p) => p.id === selectedPlan)?.price})
                                         </p>
                                     </div>
-                                    <div className="grid gap-6 md:grid-cols-3">
+                                    <div className="flex flex-wrap justify-center gap-6">
                                         {workerSubscriptionPlans.map((plan) => (
-                                            <Card key={plan.id} className={`relative cursor-pointer border-2 transition-all duration-500 overflow-hidden ${selectedPlan === plan.id ? `${plan.borderColor} shadow-xl ring-2 ring-lime-500` : "border-transparent shadow-lg hover:shadow-xl"}`} onClick={() => setSelectedPlan(plan.id)}>
+                                            <Card key={plan.id} className={`relative w-full max-w-sm cursor-pointer overflow-hidden border-2 transition-all duration-500 ${selectedPlan === plan.id ? `${plan.borderColor} shadow-xl ring-2 ring-lime-500` : "border-transparent shadow-lg hover:shadow-xl"}`} onClick={() => setSelectedPlan(plan.id)}>
                                                 {plan.popular && <Badge className="absolute top-4 right-4 rounded-full bg-gradient-to-r from-lime-500 to-emerald-500 text-white border-0 text-xs"><Sparkles className="w-3 h-3 mr-1" />Popular</Badge>}
                                                 <CardContent className="p-6">
                                                     <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${plan.color} flex items-center justify-center shadow-lg mb-4`}><plan.icon className="w-6 h-6 text-white" /></div>
@@ -494,7 +468,7 @@ export default function WorkersPage() {
                                         Next<ArrowRight className="w-4 h-4 ml-2" />
                                     </Button>
                                 ) : (
-                                    <Button className="w-full rounded-full bg-gradient-to-r from-lime-600 to-emerald-600 text-white px-8 shadow-lg shadow-lime-500/20 sm:w-auto" type="submit" disabled={isLoading}>
+                                    <Button className="ui-btn-worker w-full px-8 sm:w-auto" type="submit" disabled={isLoading}>
                                         {isLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</> : <><Send className="w-4 h-4 mr-2" />Submit Profile</>}
                                     </Button>
                                 )}

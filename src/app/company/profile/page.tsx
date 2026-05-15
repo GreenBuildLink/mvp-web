@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageIntro } from "@/components/ui/page-intro";
+import { StepProgress } from "@/components/ui/step-progress";
 import { Textarea } from "@/components/ui/textarea";
 import {
     Select,
@@ -295,7 +297,7 @@ export default function CompanyProfilePage() {
 
     if (submitted) {
         return (
-            <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+            <div className="ui-page-shell-centered">
                 <Card className="max-w-lg w-full border-0 shadow-2xl animate-scale-in">
                     <CardContent className="p-10 text-center">
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-500/30">
@@ -305,7 +307,7 @@ export default function CompanyProfilePage() {
                         <p className="text-muted-foreground mb-2">Your Green Industry form has been submitted successfully.</p>
                         <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-6">Plan: {subscriptionPlans.find((p) => p.id === selectedPlan)?.name}</p>
                         <div className="space-y-3">
-                            <Button className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg" onClick={() => router.push("/")}>
+                            <Button className="ui-btn-brand w-full" onClick={() => router.push("/")}>
                                 Go to Home
                             </Button>
                             <Button variant="outline" className="w-full rounded-full" onClick={() => { setSubmitted(false); setStep(1); }}>
@@ -319,51 +321,25 @@ export default function CompanyProfilePage() {
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-8">
-                    <Badge className="mb-4 max-w-full whitespace-normal px-4 py-1.5 text-center text-sm leading-snug bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                        <Building2 className="w-4 h-4 mr-2" />
-                        Green Industry Space
-                    </Badge>
-                    <h1 className="text-3xl sm:text-4xl font-bold mb-3">Green Industry <span className="gradient-text">Registration Form</span></h1>
-                </div>
+        <div className="ui-page-shell">
+            <div className="ui-page-container-4xl">
+                <PageIntro
+                    badge="Green Industry Space"
+                    icon={Building2}
+                    title={
+                        <>
+                            Green Industry <span className="gradient-text">Registration Form</span>
+                        </>
+                    }
+                    className="mb-8"
+                />
 
-                <div className="mb-8 space-y-4">
-                    <div className="rounded-2xl border border-emerald-100 bg-card/80 p-4 shadow-sm sm:hidden">
-                        <div className="mb-3 flex items-center justify-between gap-3 text-xs font-medium text-muted-foreground">
-                            <span>Step {step} of {companySteps.length}</span>
-                            <span className="text-right text-emerald-700">{companySteps[step - 1]}</span>
-                        </div>
-                        <div className="h-2 rounded-full bg-emerald-100">
-                            <div
-                                className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 transition-all"
-                                style={{ width: `${(step / companySteps.length) * 100}%` }}
-                            />
-                        </div>
-                    </div>
-                    <div className="hidden overflow-x-auto pb-2 sm:block">
-                        <div className="flex w-max min-w-full items-center justify-start gap-2 sm:justify-center">
-                        {companySteps.map((label, index) => {
-                            const s = index + 1;
-                            return (
-                                <button
-                                    key={label}
-                                    onClick={() => setStep(s)}
-                                    className={`shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${step === s
-                                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white"
-                                        : step > s
-                                            ? "bg-emerald-100 text-emerald-700"
-                                            : "bg-muted text-muted-foreground"
-                                        }`}
-                                >
-                                    {s}. {label}
-                                </button>
-                            );
-                        })}
-                        </div>
-                    </div>
-                </div>
+                <StepProgress
+                    currentStep={step}
+                    steps={companySteps.map((label) => ({ label }))}
+                    className="mb-8"
+                    onStepSelect={setStep}
+                />
 
                 <form onSubmit={handleSubmit}>
                     <Card className="border-0 shadow-xl">
@@ -374,60 +350,60 @@ export default function CompanyProfilePage() {
                         <CardContent className="space-y-6 pt-4">
                             {step === 1 && (
                                 <>
-                                    <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
+                                    <div className="ui-form-section">
                                         <h3 className="font-semibold">1. Company Information</h3>
                                         <div className="grid sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2"><Label>Company Name *</Label><Input placeholder="Ex: GreenBuild Materials" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                            <div className="space-y-2"><Label>Email Address *</Label><Input type="email" placeholder="Ex: contact@company.com" value={companyEmail} onChange={(e) => setCompanyEmail(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
+                                            <div className="space-y-2"><Label>Company Name *</Label><Input placeholder="Ex: GreenBuild Materials" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="ui-field" /></div>
+                                            <div className="space-y-2"><Label>Email Address *</Label><Input type="email" placeholder="Ex: contact@company.com" value={companyEmail} onChange={(e) => setCompanyEmail(e.target.value)} className="ui-field" /></div>
                                         </div>
                                         <div className="grid sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2"><Label>Phone Number *</Label><Input placeholder="Ex: +216 12 345 678" value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                            <div className="space-y-2"><Label>Website</Label><Input placeholder="Ex: https://company.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
+                                            <div className="space-y-2"><Label>Phone Number *</Label><Input placeholder="Ex: +216 12 345 678" value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} className="ui-field" /></div>
+                                            <div className="space-y-2"><Label>Website</Label><Input placeholder="Ex: https://company.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="ui-field" /></div>
                                         </div>
                                         <div className="grid sm:grid-cols-3 gap-4">
-                                            <div className="space-y-2"><Label>Address *</Label><Input placeholder="Ex: 12 Green Avenue" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                            <div className="space-y-2"><Label>Country *</Label><Input placeholder="Ex: Tunisia" value={companyCountry} onChange={(e) => setCompanyCountry(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                            <div className="space-y-2"><Label>City *</Label><Input placeholder="Ex: Tunis" value={companyCity} onChange={(e) => setCompanyCity(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
+                                            <div className="space-y-2"><Label>Address *</Label><Input placeholder="Ex: 12 Green Avenue" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} className="ui-field" /></div>
+                                            <div className="space-y-2"><Label>Country *</Label><Input placeholder="Ex: Tunisia" value={companyCountry} onChange={(e) => setCompanyCountry(e.target.value)} className="ui-field" /></div>
+                                            <div className="space-y-2"><Label>City *</Label><Input placeholder="Ex: Tunis" value={companyCity} onChange={(e) => setCompanyCity(e.target.value)} className="ui-field" /></div>
                                         </div>
                                         <div className="rounded-lg border border-emerald-100 p-3 space-y-3">
                                             <h4 className="font-medium">Social Media (if available)</h4>
                                             <div className="grid sm:grid-cols-2 gap-3">
                                                 <div className="space-y-2">
                                                     <Label>LinkedIn</Label>
-                                                    <Input placeholder="https://linkedin.com/company/..." value={linkedInUrl} onChange={(e) => setLinkedInUrl(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                                    <Input placeholder="https://linkedin.com/company/..." value={linkedInUrl} onChange={(e) => setLinkedInUrl(e.target.value)} className="ui-field" />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <Label>Facebook</Label>
-                                                    <Input placeholder="https://facebook.com/..." value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                                    <Input placeholder="https://facebook.com/..." value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} className="ui-field" />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <Label>Pinterest</Label>
-                                                    <Input placeholder="https://pinterest.com/..." value={pinterestUrl} onChange={(e) => setPinterestUrl(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                                    <Input placeholder="https://pinterest.com/..." value={pinterestUrl} onChange={(e) => setPinterestUrl(e.target.value)} className="ui-field" />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <Label>Instagram</Label>
-                                                    <Input placeholder="https://instagram.com/..." value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
+                                                    <Input placeholder="https://instagram.com/..." value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} className="ui-field" />
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
                                                 <Label>Youtube</Label>
-                                                <Input placeholder="https://youtube.com/@..." value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" />
-                                            </div>
-                                        </div>
+                                                <Input placeholder="https://youtube.com/@..." value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} className="ui-field" />
+                                    </div>
+                                </div>
                                     </div>
 
-                                    <div className="rounded-xl border border-emerald-100 p-4 space-y-4">
+                                    <div className="ui-form-section">
                                         <h3 className="font-semibold">2. Company Profile</h3>
                                         <div className="space-y-2">
                                             <Label>Type of company</Label>
                                             <Select value={companyType} onValueChange={setCompanyType}>
-                                                <SelectTrigger className="rounded-xl h-12 border-emerald-200/50"><SelectValue placeholder="Select type" /></SelectTrigger>
+                                                <SelectTrigger className="ui-field"><SelectValue placeholder="Select type" /></SelectTrigger>
                                                 <SelectContent>{companyTypes.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent>
                                             </Select>
                                         </div>
                                         <div className="grid sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2"><Label>Years of operation</Label><Input placeholder="Ex: 8 years" value={yearsOfOperation} onChange={(e) => setYearsOfOperation(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
-                                            <div className="space-y-2"><Label>Main activity / sector</Label><Input placeholder="Ex: Eco insulation and facade systems" value={mainSector} onChange={(e) => setMainSector(e.target.value)} className="rounded-xl h-12 border-emerald-200/50" /></div>
+                                            <div className="space-y-2"><Label>Years of operation</Label><Input placeholder="Ex: 8 years" value={yearsOfOperation} onChange={(e) => setYearsOfOperation(e.target.value)} className="ui-field" /></div>
+                                            <div className="space-y-2"><Label>Main activity / sector</Label><Input placeholder="Ex: Eco insulation and facade systems" value={mainSector} onChange={(e) => setMainSector(e.target.value)} className="ui-field" /></div>
                                         </div>
                                     </div>
                                 </>
@@ -538,9 +514,9 @@ export default function CompanyProfilePage() {
                             <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
                                 <Button type="button" variant="outline" className="w-full rounded-full px-6 sm:w-auto" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={isLoading || step === 1}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button>
                                 {step < 3 ? (
-                                    <Button type="button" className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 sm:w-auto" onClick={() => setStep((s) => Math.min(3, s + 1))}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button>
+                                    <Button type="button" className="ui-btn-brand w-full px-8 sm:w-auto" onClick={() => setStep((s) => Math.min(3, s + 1))}>Next<ArrowRight className="w-4 h-4 ml-2" /></Button>
                                 ) : (
-                                    <Button type="submit" className="w-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-10 sm:w-auto" disabled={isLoading}>
+                                    <Button type="submit" className="ui-btn-brand w-full px-10 sm:w-auto" disabled={isLoading}>
                                         {isLoading ? (<><Loader2 className="w-5 h-5 mr-2 animate-spin" />Sending...</>) : (<><CheckCircle2 className="w-5 h-5 mr-2" />Submit</>)}
                                     </Button>
                                 )}
