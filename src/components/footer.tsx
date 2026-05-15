@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Leaf, Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
+import { BrandMark } from "@/components/ui/brand-mark";
 import { Separator } from "@/components/ui/separator";
 
 export function Footer() {
@@ -10,9 +11,7 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-xl shadow-emerald-500/25">
-                <Leaf className="w-6 h-6 text-white" />
-              </div>
+              <BrandMark className="h-12 w-12 shadow-xl shadow-emerald-500/25" />
               <span className="text-xl sm:text-2xl font-black tracking-tight">
                 <span className="text-foreground">GreenBuild</span>
                 <span className="text-emerald-500">Link</span>

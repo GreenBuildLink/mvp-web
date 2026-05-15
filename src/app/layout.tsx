@@ -4,9 +4,14 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "GreenBuildLink — Plateforme d'Éco-Construction",
+  title: "GreenBuildLink - Plateforme d'Eco-Construction",
   description:
-    "Plateforme innovante connectant entreprises de matériaux écologiques et concepteurs pour des projets de construction durable.",
+    "Plateforme innovante connectant entreprises de materiaux ecologiques et concepteurs pour des projets de construction durable.",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: ["/icon.svg"],
+    apple: ["/icon.svg"],
+  },
 };
 
 export default function RootLayout({

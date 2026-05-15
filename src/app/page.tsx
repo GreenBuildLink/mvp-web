@@ -94,9 +94,14 @@ export default function HomePage() {
         <div className="relative z-10 mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <div className="animate-fade-in-up">
             <Badge className="mb-6 max-w-full whitespace-normal px-4 py-2 text-center text-xs font-medium leading-snug bg-emerald-100/80 text-emerald-700 backdrop-blur-sm dark:border-emerald-800/30 dark:bg-emerald-900/40 dark:text-emerald-300 sm:px-5 sm:text-sm">
-              <Sparkles className="w-4 h-4 mr-2" />
-              GreenBuildLink : An Integrated Ecosystem for{" "}
-              <span className="whitespace-nowrap">Green Building</span>
+              <span className="flex max-w-full flex-col items-center gap-1.5 sm:flex-row sm:gap-2">
+                <Sparkles className="h-4 w-4 shrink-0" />
+                <span className="flex flex-wrap items-center justify-center gap-x-1 text-balance">
+                  <span>GreenBuildLink :</span>
+                  <span>An Integrated Ecosystem</span>
+                  <span className="whitespace-nowrap">for Green Building</span>
+                </span>
+              </span>
             </Badge>
           </div>
 
