@@ -131,15 +131,22 @@ export function CompanyProfileStepOne({
             <div className="ui-form-section">
                 <h3 className="font-semibold">2. Company Profile</h3>
                 <div className="space-y-2">
-                    <Label>Type of company</Label>
-                    <Select value={companyType} onValueChange={setCompanyType}>
-                        <SelectTrigger className="ui-field"><SelectValue placeholder="Select type" /></SelectTrigger>
+                    <Label>Type of company *</Label>
+                    <Select
+                        value={companyType}
+                        onValueChange={(value) => {
+                            setCompanyType(value);
+                            clearFieldError("companyType");
+                        }}
+                    >
+                        <SelectTrigger className={getFieldClass("companyType", "ui-field")}><SelectValue placeholder="Select type" /></SelectTrigger>
                         <SelectContent>{companyTypes.map((option) => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent>
                     </Select>
+                    {renderFieldError("companyType")}
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2"><Label>Years of operation</Label><Input placeholder="Ex: 8 years" value={yearsOfOperation} onChange={(e) => setYearsOfOperation(e.target.value)} className="ui-field" /></div>
-                    <div className="space-y-2"><Label>Main activity / sector</Label><Input placeholder="Ex: Eco insulation and facade systems" value={mainSector} onChange={(e) => setMainSector(e.target.value)} className="ui-field" /></div>
+                    <div className="space-y-2"><Label>Years of experience *</Label><Input placeholder="Ex: 8 years" value={yearsOfOperation} onChange={(e) => { setYearsOfOperation(e.target.value); clearFieldError("yearsOfOperation"); }} className={getFieldClass("yearsOfOperation", "ui-field")} />{renderFieldError("yearsOfOperation")}</div>
+                    <div className="space-y-2"><Label>Main activity sector *</Label><Input placeholder="Ex: Eco insulation and facade systems" value={mainSector} onChange={(e) => { setMainSector(e.target.value); clearFieldError("mainSector"); }} className={getFieldClass("mainSector", "ui-field")} />{renderFieldError("mainSector")}</div>
                 </div>
             </div>
         </>

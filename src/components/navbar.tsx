@@ -12,6 +12,7 @@ import {
     Compass,
     HardHat,
     Home,
+    LayoutDashboard,
     Leaf,
     Menu,
     X,
@@ -20,6 +21,8 @@ import {
 const navLinks = [
     { href: "/", label: "Home", icon: Home },
 ];
+
+const sarraLink = { href: "/to-sarra", label: "toSarra", icon: LayoutDashboard };
 
 const greenHubLinks = [
     { href: "/company", label: "Green Industries", icon: Building2 },
@@ -33,6 +36,8 @@ export function Navbar() {
     const [open, setOpen] = useState(false);
     const [mobileHubOpen, setMobileHubOpen] = useState(false);
     const isGreenHubActive = greenHubLinks.some((link) => pathname === link.href);
+    const isSarraActive = pathname.startsWith(sarraLink.href);
+    const SarraIcon = sarraLink.icon;
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -78,6 +83,19 @@ export function Navbar() {
                                 </Link>
                             );
                         })}
+
+                        <Link href={sarraLink.href}>
+                            <Button
+                                variant={isSarraActive ? "default" : "ghost"}
+                                className={`gap-2 rounded-full px-5 transition-all duration-300 ${isSarraActive
+                                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40"
+                                        : "hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400"
+                                    }`}
+                            >
+                                <SarraIcon className="w-4 h-4" />
+                                {sarraLink.label}
+                            </Button>
+                        </Link>
 
                         <div className="relative group">
                             <Button
@@ -172,6 +190,17 @@ export function Navbar() {
                                             </Link>
                                         );
                                     })}
+                                    <Link
+                                        href={sarraLink.href}
+                                        onClick={() => setOpen(false)}
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${isSarraActive
+                                                ? "bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-emerald-700 dark:text-emerald-400 font-medium"
+                                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                            }`}
+                                    >
+                                        <SarraIcon className="w-5 h-5" />
+                                        {sarraLink.label}
+                                    </Link>
                                     <button
                                         type="button"
                                         onClick={() => setMobileHubOpen((prev) => !prev)}

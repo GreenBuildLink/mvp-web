@@ -1,7 +1,7 @@
 "use client";
 
 import { Dispatch, FormEvent, SetStateAction, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FileText, Send, Sparkles, Compass } from "lucide-react";
 
 import { DesignerAccreditedDashboard } from "@/components/designer/dashboards/designer-accredited-dashboard";
@@ -33,6 +33,7 @@ type FieldErrors = Record<string, string>;
 
 export default function NewProjectPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [step, setStep] = useState(1);
     const [submitted, setSubmitted] = useState(false);
     const [fullName, setFullName] = useState("");
@@ -63,6 +64,11 @@ export default function NewProjectPage() {
     const [portfolioLink, setPortfolioLink] = useState("");
     const [consent, setConsent] = useState(false);
     const { selectedPlan, setSelectedPlan, selectedPlanConfig } = usePlanSelection(designerSubscriptionPlans);
+    const previewPlanId = searchParams.get("preview") === "sarra" ? searchParams.get("plan") : null;
+    const previewPlanConfig = useMemo(
+        () => designerSubscriptionPlans.find((plan) => plan.id === previewPlanId),
+        [previewPlanId],
+    );
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const { fieldErrors, setFieldErrors, clearFieldError, getFieldClass } = useFormFieldErrors();
@@ -279,6 +285,50 @@ export default function NewProjectPage() {
         setSubmitted(false);
         setStep(1);
     };
+
+    if (previewPlanConfig) {
+        if (previewPlanConfig.id === "discovery") {
+            return (
+                <DesignerDiscoveryDashboard
+                    fullName="Sarra Preview Designer"
+                    knowledgeLevel="Intermediate"
+                    profileReadiness={82}
+                    selectedPlanName={previewPlanConfig.name}
+                    selectedPlanPrice={previewPlanConfig.price}
+                    onGoHome={() => router.push("/")}
+                    onDone={() => router.push("/to-sarra")}
+                    onReset={() => router.push("/to-sarra")}
+                />
+            );
+        }
+
+        if (previewPlanConfig.id === "professional") {
+            return (
+                <DesignerProfessionalDashboard
+                    fullName="Sarra Preview Designer"
+                    profileReadiness={89}
+                    selectedPlanName={previewPlanConfig.name}
+                    selectedPlanPrice={previewPlanConfig.price}
+                    onGoHome={() => router.push("/")}
+                    onDone={() => router.push("/to-sarra")}
+                    onReset={() => router.push("/to-sarra")}
+                />
+            );
+        }
+
+        if (previewPlanConfig.id === "accredited") {
+            return (
+                <DesignerAccreditedDashboard
+                    fullName="Sarra Preview Designer"
+                    selectedPlanName={previewPlanConfig.name}
+                    selectedPlanPrice={previewPlanConfig.price}
+                    onGoHome={() => router.push("/")}
+                    onDone={() => router.push("/to-sarra")}
+                    onReset={() => router.push("/to-sarra")}
+                />
+            );
+        }
+    }
 
     if (submitted) {
         if (selectedPlan === "discovery") {

@@ -47,9 +47,9 @@ export type CompanySubmission = {
     pinterest_url: string | null;
     instagram_url: string | null;
     youtube_url: string | null;
-    company_type: string | null;
-    years_of_operation: string | null;
-    main_sector: string | null;
+    company_type: string;
+    years_of_operation: string;
+    main_sector: string;
     collaboration_interests: string[];
     publish_consent: boolean;
     selected_plan: string | null;

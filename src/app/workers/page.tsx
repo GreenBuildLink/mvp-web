@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
     ArrowRight,
     BriefcaseBusiness,
@@ -47,6 +47,7 @@ type FieldErrors = Record<string, string>;
 
 export default function WorkersPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [showForm, setShowForm] = useState(false);
     const [formStep, setFormStep] = useState(1);
     const [submitted, setSubmitted] = useState(false);
@@ -83,6 +84,11 @@ export default function WorkersPage() {
     const [portfolioLink, setPortfolioLink] = useState("");
     const [consent, setConsent] = useState(false);
     const { selectedPlan, setSelectedPlan, selectedPlanConfig } = usePlanSelection(workerSubscriptionPlans);
+    const previewPlanId = searchParams.get("preview") === "sarra" ? searchParams.get("plan") : null;
+    const previewPlanConfig = useMemo(
+        () => workerSubscriptionPlans.find((plan) => plan.id === previewPlanId),
+        [previewPlanId],
+    );
 
     const workerReadinessCompleted = useMemo(() => {
         const checkpoints = [
@@ -280,6 +286,41 @@ export default function WorkersPage() {
         setShowForm(false);
         setFormStep(1);
     };
+
+    if (previewPlanConfig) {
+        if (previewPlanConfig.id === "qualified") {
+            return (
+                <WorkerQualifiedDashboard
+                    name="Sarra Preview Worker"
+                    trade="Solar installation"
+                    workerReadiness={86}
+                    yearsExperience="3-5 years"
+                    location="Tunis, Tunisia"
+                    currentlyAvailable="Yes"
+                    tasksCount={4}
+                    selectedPlanName={previewPlanConfig.name}
+                    selectedPlanPrice={previewPlanConfig.price}
+                    onGoHome={() => router.push("/")}
+                    onDone={() => router.push("/to-sarra")}
+                    onReset={() => router.push("/to-sarra")}
+                />
+            );
+        }
+
+        if (previewPlanConfig.id === "verified") {
+            return (
+                <WorkerVerifiedDashboard
+                    name="Sarra Preview Worker"
+                    workerReadiness={93}
+                    selectedPlanName={previewPlanConfig.name}
+                    selectedPlanPrice={previewPlanConfig.price}
+                    onGoHome={() => router.push("/")}
+                    onDone={() => router.push("/to-sarra")}
+                    onReset={() => router.push("/to-sarra")}
+                />
+            );
+        }
+    }
 
     if (!showForm) {
         return (

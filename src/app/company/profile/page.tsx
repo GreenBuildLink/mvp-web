@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Building2, CheckCircle2, Loader2 } from "lucide-react";
 
 import { CompanyBusinessDashboard } from "@/components/company/dashboards/company-business-dashboard";
@@ -64,6 +64,7 @@ type FieldErrors = Record<string, string>;
 
 export default function CompanyProfilePage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [step, setStep] = useState(1);
     const [submitted, setSubmitted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -89,6 +90,51 @@ export default function CompanyProfilePage() {
     const [collaborationInterests, setCollaborationInterests] = useState<string[]>([]);
     const [publishConsent, setPublishConsent] = useState(false);
     const { selectedPlan, setSelectedPlan, selectedPlanConfig } = usePlanSelection(companySubscriptionPlans);
+    const previewPlanId = searchParams.get("preview") === "sarra" ? searchParams.get("plan") : null;
+    const previewPlanConfig = useMemo(
+        () => companySubscriptionPlans.find((plan) => plan.id === previewPlanId),
+        [previewPlanId],
+    );
+    const previewProducts = useMemo<CompanyProductForm[]>(
+        () => [
+            {
+                ...emptyCompanyProduct,
+                name: "EcoTherm Facade Panel",
+                category: "Insulation systems",
+                description: "High-performance facade solution positioned for sustainable retrofit projects.",
+                certifications: ["Environmental Product Declaration (EPD)"],
+                technicalDatasheet: "preview/ecotherm-facade-panel.pdf",
+                exampleProjects: "North district housing retrofit",
+            },
+            {
+                ...emptyCompanyProduct,
+                name: "RainLoop Recovery Module",
+                category: "Water solutions",
+                description: "Compact rainwater capture and reuse system for mixed-use developments.",
+                certifications: ["LEED compliant"],
+                technicalDatasheet: "preview/rainloop-module.pdf",
+                exampleProjects: "Mixed-use civic campus",
+            },
+            {
+                ...emptyCompanyProduct,
+                name: "SolarSkin Canopy",
+                category: "Energy solutions",
+                description: "Solar-ready shading canopy for commercial and educational environments.",
+                certifications: ["ISO standards"],
+                technicalDatasheet: "preview/solarskin-canopy.pdf",
+                exampleProjects: "Regional education hub",
+            },
+            {
+                ...emptyCompanyProduct,
+                name: "SmartVent Control Kit",
+                category: "Smart building",
+                description: "Ventilation optimization kit with demand-based controls for energy-aware buildings.",
+                certifications: ["Environmental Product Declaration (EPD)"],
+                exampleProjects: "Office upgrade package",
+            },
+        ],
+        [],
+    );
 
     const companyLocation = useMemo(
         () => [companyAddress, companyCity, companyCountry].map((part) => part.trim()).filter(Boolean).join(", "),
@@ -115,6 +161,19 @@ export default function CompanyProfilePage() {
     const starterCertificationCount = useMemo(
         () => submittedProducts.filter((product) => product.certifications.length > 0).length,
         [submittedProducts],
+    );
+    const previewStarterVisibleProducts = useMemo(() => previewProducts.slice(0, 3), [previewProducts]);
+    const previewCategoryCount = useMemo(
+        () => new Set(previewProducts.map((product) => product.category.trim()).filter(Boolean)).size,
+        [previewProducts],
+    );
+    const previewDatasheetCount = useMemo(
+        () => previewProducts.filter((product) => hasText(product.technicalDatasheet)).length,
+        [previewProducts],
+    );
+    const previewCertificationCount = useMemo(
+        () => previewProducts.filter((product) => product.certifications.length > 0).length,
+        [previewProducts],
     );
 
     const profileCompletionCompleted = useMemo(() => {
@@ -212,6 +271,9 @@ export default function CompanyProfilePage() {
             if (!hasText(companyCountry)) errors.companyCountry = "Country is required.";
             if (!hasText(companyCity)) errors.companyCity = "City is required.";
             if (companyLocation.length === 0) errors.companyLocation = "Location is required.";
+            if (!hasText(companyType)) errors.companyType = "Type of company is required.";
+            if (!hasText(yearsOfOperation)) errors.yearsOfOperation = "Years of experience is required.";
+            if (!hasText(mainSector)) errors.mainSector = "Main activity sector is required.";
 
             return errors;
         }
@@ -312,7 +374,7 @@ export default function CompanyProfilePage() {
             const payload = {
                 type: "company",
                 companyName,
-                companyDescription: mainSector || companyType || "Green industry registration",
+                companyDescription: mainSector,
                 companyAddress,
                 companyCity,
                 companyCountry,
@@ -357,6 +419,61 @@ export default function CompanyProfilePage() {
         setSubmitted(false);
         setStep(1);
     };
+
+    if (previewPlanConfig) {
+        if (previewPlanConfig.id === "enterprise") {
+            return (
+                <CompanyPremiumDashboard
+                    companyName="Sarra Preview Industries"
+                    selectedPlanName={previewPlanConfig.name}
+                    selectedPlanPrice={previewPlanConfig.price}
+                    submittedProductCount={previewProducts.length}
+                    onExploreDirectory={() => router.push("/company")}
+                    onGoHome={() => router.push("/")}
+                    onReset={() => router.push("/to-sarra")}
+                />
+            );
+        }
+
+        if (previewPlanConfig.id === "professional") {
+            return (
+                <CompanyBusinessDashboard
+                    companyName="Sarra Preview Industries"
+                    selectedPlanName={previewPlanConfig.name}
+                    selectedPlanPrice={previewPlanConfig.price}
+                    profileCompletion={92}
+                    submittedProducts={previewProducts}
+                    starterCategoryCount={previewCategoryCount}
+                    starterDatasheetCount={previewDatasheetCount}
+                    starterCertificationCount={previewCertificationCount}
+                    companyLocation="Tunis, Tunisia"
+                    onExploreDirectory={() => router.push("/company")}
+                    onGoHome={() => router.push("/")}
+                    onReset={() => router.push("/to-sarra")}
+                />
+            );
+        }
+
+        if (previewPlanConfig.id === "starter") {
+            return (
+                <CompanyStarterDashboard
+                    companyName="Sarra Preview Industries"
+                    selectedPlanName={previewPlanConfig.name}
+                    selectedPlanPrice={previewPlanConfig.price}
+                    profileCompletion={84}
+                    submittedProducts={previewProducts}
+                    starterVisibleProducts={previewStarterVisibleProducts}
+                    starterCategoryCount={previewCategoryCount}
+                    starterDatasheetCount={previewDatasheetCount}
+                    starterCertificationCount={previewCertificationCount}
+                    companyLocation="Tunis, Tunisia"
+                    onExploreDirectory={() => router.push("/company")}
+                    onGoHome={() => router.push("/")}
+                    onReset={() => router.push("/to-sarra")}
+                />
+            );
+        }
+    }
 
     if (submitted) {
         if (selectedPlan === "enterprise") {
